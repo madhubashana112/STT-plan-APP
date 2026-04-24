@@ -1,0 +1,19 @@
+{
+  "name": "stt-plan-app",
+  "version": "1.2.0",
+  "description": "CK Sir STT Plan App",
+  "scripts": {
+    "build": "echo 'Static build complete'",
+    "copy": "npx cap copy",
+    "sync": "npx cap sync",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.0.0"
+  }
+}

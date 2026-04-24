@@ -1,0 +1,93 @@
+// Shared CSS for the STT plan app.
+:root {
+  --stt-bg: #050a06;
+  --stt-bg-2: #0a1a10;
+  --stt-green: #22c55e;
+  --stt-green-bright: #4ade80;
+  --stt-green-glow: #86efac;
+  --stt-gold: #fcd34d;
+  --stt-gold-bright: #fde047;
+  --stt-pink: #f472b6;
+  --stt-blue: #38bdf8;
+  --stt-card: rgba(16, 32, 20, 0.85);
+  --stt-card-border: rgba(74, 222, 128, 0.18);
+  --stt-text: #f0fdf4;
+  --stt-text-dim: rgba(240, 253, 244, 0.88);
+  --stt-text-soft: rgba(240, 253, 244, 0.72);
+  --stt-font: "Inter", "Noto Sans Sinhala", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --stt-font-sinhala: "Noto Sans Sinhala", "Inter", system-ui, sans-serif;
+  --stt-font-display: "Archivo Black", "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--stt-font);
+  background: #0a0e0b;
+  color: var(--stt-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+/* Animations */
+@keyframes sttSparkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes sttFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sttPopIn {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes sttPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.6); }
+  50% { box-shadow: 0 0 0 10px rgba(74,222,128,0); }
+}
+@keyframes sttShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes sttFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes sttConfettiFall {
+  0%   { transform: translate(0, -20vh) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--x, 0), 110vh) rotate(720deg); opacity: 0; }
+}
+
+.stt-confetti-piece {
+  position: fixed;
+  top: 0;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: sttConfettiFall linear forwards;
+}
+
+/* Scrollbars - Hidden but functional */
+.stt-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch; /* Momentum scrolling for mobile */
+}
+.stt-scroll::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+
+@keyframes sttShine {
+  0% { transform: skewX(-20deg) translateX(-150%); }
+  50%, 100% { transform: skewX(-20deg) translateX(250%); }
+}

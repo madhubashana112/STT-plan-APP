@@ -1,0 +1,14 @@
+{
+  "appId": "com.cksir.sttplan",
+  "appName": "STT PLAN",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#050a06"
+    }
+  }
+}
