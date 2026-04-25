@@ -209,7 +209,7 @@ const PomodoroModal = ({ open, onClose, task }) => {
               <stop offset="100%" stopColor="#fcd34d"/>
             </linearGradient>
           </defs>
-          <text x="100" y="105" textAnchor="middle" fill="#ecfdf5" fontSize="32" fontWeight="900" fontFamily="Inter">
+          <text x="100" y="105" textAnchor="middle" fill="#ecfdf5" fontSize="32" fontWeight="900" fontFamily="Inter" style={{ transition: 'none' }}>
             {formatTime(seconds)}
           </text>
           <text x="100" y="128" textAnchor="middle" fill={isBreak ? '#38bdf8' : '#86efac'} fontSize="11" fontWeight="700">
