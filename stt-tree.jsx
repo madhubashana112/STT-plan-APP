@@ -87,11 +87,9 @@ const TreeSVG = ({ branches, size = 200, glow = true, week = 1, theme = 'default
         }
         .stt-tree-group {
           transform-origin: bottom center;
-          animation: sttSway 4s ease-in-out infinite;
         }
         .stt-leaf-lit {
           transform-origin: center;
-          animation: sttLeafPulse 3s ease-in-out infinite;
         }
       `}</style>
       <defs>
@@ -165,8 +163,6 @@ const TreeSVG = ({ branches, size = 200, glow = true, week = 1, theme = 'default
                 strokeDasharray={isLit ? '0' : '3 3'}
                 strokeOpacity={isLit ? 1 : 0.4}
                 style={{
-                  transition: 'all 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  filter: isLit && glow ? `drop-shadow(0 0 10px ${b.color}) drop-shadow(0 0 25px ${b.color})` : 'none',
                   transformOrigin: `${lf.cx}px ${lf.cy}px`,
                   transform: isLit ? 'scale(1)' : 'scale(0.85)',
                 }}
