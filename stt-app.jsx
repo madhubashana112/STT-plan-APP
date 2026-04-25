@@ -542,24 +542,8 @@ const MainApp = ({ onLogout }) => {
   const StarBg = () => (
     <div style={{
       position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
-      background: `
-        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(74,222,128,0.18), transparent 60%),
-        radial-gradient(ellipse 70% 40% at 50% 100%, rgba(34,197,94,0.12), transparent 60%),
-        linear-gradient(180deg, #050a06 0%, #0a140c 40%, #050a06 100%)
-      `,
-    }}>
-      {Array.from({ length: 30 }).map((_, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${(i * 47) % 100}%`, top: `${(i * 83) % 100}%`,
-          width: 1 + (i % 3), height: 1 + (i % 3), borderRadius: '50%',
-          background: '#86efac',
-          boxShadow: '0 0 4px #86efac',
-          opacity: 0.2 + (i % 5) * 0.08,
-          animation: `sttSparkle ${3 + (i % 4)}s ease-in-out ${i * 0.15}s infinite`,
-        }} />
-      ))}
-    </div>
+      background: 'linear-gradient(180deg, #050a06 0%, #0a140c 40%, #050a06 100%)',
+    }} />
   );
 
   // Mini tree — simple, matches reference image (small fruit clusters at 3 branch tips)
@@ -781,13 +765,10 @@ const MainApp = ({ onLogout }) => {
                   width: '100%', maxWidth: 40, height: Math.max(6, (b.val / maxH) * 80),
                   background: `linear-gradient(180deg, ${b.color}, ${b.color}40)`,
                   borderRadius: '10px 10px 6px 6px',
-                  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: `0 4px 15px ${b.color}40`,
+                  transition: 'none',
                   position: 'relative',
                   overflow: 'hidden'
-                }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', transform: 'skewX(-20deg) translateX(-100%)', animation: 'sttShine 3s infinite' }} />
-                </div>
+                }} />
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</div>
               </div>
             ))}

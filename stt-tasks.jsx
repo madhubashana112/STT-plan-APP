@@ -360,16 +360,14 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
 
 // Common modal styles
 const modalBg = () => ({
-  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)',
+  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  zIndex: 100, padding: 16, animation: 'sttFadeIn .2s',
-  backdropFilter: 'blur(8px)',
+  zIndex: 100, padding: 16,
 });
 const modalCard = () => ({
-  background: 'linear-gradient(180deg, #0f1f14, #050a06)',
+  background: '#050a06',
   borderRadius: 16, padding: 16, width: '100%', maxWidth: 320,
   border: '1px solid rgba(74,222,128,0.25)',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(74,222,128,0.1)',
 });
 const closeBtn = () => ({
   width: 24, height: 24, borderRadius: 6,
