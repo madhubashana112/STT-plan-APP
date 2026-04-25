@@ -152,12 +152,12 @@ const TreeSVG = ({ branches, size = 200, glow = true, week = 1, theme = 'default
                  transformOrigin: `${lf.cx}px ${lf.cy}px`
                }}>
               {isLit && glow && (
-                <circle cx={lf.cx} cy={lf.cy} r={lf.r * 2.2}
-                        fill={`url(#leafGlow-${uid})`} style={{ mixBlendMode: 'screen' }} />
+                <circle cx={lf.cx} cy={lf.cy} r={lf.r * 1.5}
+                        fill={mainColor} opacity="0.3" />
               )}
               <circle
                 cx={lf.cx} cy={lf.cy} r={lf.r * 1.15}
-                fill={isLit ? `url(#leafFill-${uid})` : 'rgba(255,255,255,0.03)'}
+                fill={isLit ? mainColor : 'rgba(255,255,255,0.03)'}
                 stroke={isLit ? 'none' : `rgba(255,255,255,0.15)`}
                 strokeWidth={isLit ? 0 : 1}
                 strokeDasharray={isLit ? '0' : '3 3'}

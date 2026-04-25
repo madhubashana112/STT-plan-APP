@@ -19,7 +19,21 @@
   --stt-font-display: "Archivo Black", "Inter", system-ui, sans-serif;
 }
 
-* { box-sizing: border-box; }
+/* Anti-Blink Fix for Android WebViews */
+* {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+svg, text, .stt-tree-group, .stt-leaf-lit {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
 
 body {
   margin: 0;
