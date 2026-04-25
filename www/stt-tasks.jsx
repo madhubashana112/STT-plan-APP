@@ -99,10 +99,8 @@ const TaskRow = ({ task, done, note, subject, onToggle, onNote, onTimer, onRemov
 // ===== Pomodoro modal =====
 const PomodoroModal = ({ open, onClose, task }) => {
   const { seconds, running, start, pause, reset, setPresetMin, preset, isBreak } = usePomodoro();
-  const [lofiOn, setLofiOn] = React.useState(false);
   const [customOpen, setCustomOpen] = React.useState(false);
   const [customVal, setCustomVal] = React.useState('25');
-  const audioRef = React.useRef(null);
   
   React.useEffect(() => {
     if (open && task && task.minutes) {
@@ -111,18 +109,6 @@ const PomodoroModal = ({ open, onClose, task }) => {
     }
   }, [open, task?.id]);
 
-  React.useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.5;
-      if (lofiOn && running) {
-        audioRef.current.play().catch(err => {
-          console.warn("Audio play blocked:", err);
-        });
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [lofiOn, running]);
 
   if (!open) return null;
   const totalSec = preset * 60;
@@ -176,25 +162,10 @@ const PomodoroModal = ({ open, onClose, task }) => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           {task?.title ? (
-            <div style={{ fontSize: 11, color: 'rgba(240,253,244,0.88)', fontFamily: 'var(--stt-font-sinhala)', maxWidth: '60%' }}>
+            <div style={{ fontSize: 11, color: 'rgba(240,253,244,0.88)', fontFamily: 'var(--stt-font-sinhala)', maxWidth: '90%' }}>
                {task.title}
             </div>
           ) : <div style={{ fontSize: 11, color: '#86efac', fontWeight: 700 }}>{isBreak ? '☕ Break Time' : '✍️ Study Mode'}</div>}
-          
-          <button onClick={() => {
-            const next = !lofiOn;
-            setLofiOn(next);
-            if (next && audioRef.current) {
-              audioRef.current.play().catch(err => console.warn("Lofi play failed:", err));
-            }
-          }} style={{
-            fontSize: 10, padding: '4px 8px', borderRadius: 8,
-            background: lofiOn ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.05)',
-            color: lofiOn ? '#86efac' : '#fff', border: `1px solid ${lofiOn ? '#4ade80' : 'transparent'}`,
-            transition: 'all 0.2s', fontWeight: 600
-          }}>
-            {lofiOn ? '🎧 Lofi: ON' : '🎧 Lofi: OFF'}
-          </button>
         </div>
 
         <svg viewBox="0 0 200 200" width="180" height="180" style={{ display: 'block', margin: '0 auto' }}>
@@ -394,7 +365,7 @@ const ConfirmModal = ({ open, onClose, onConfirm, title, message, cancelText, co
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>❓</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', marginBottom: 8, fontFamily: 'var(--stt-font-sinhala)' }}>
-            {title || 'පණිවිඩයක්'}
+            {title || t('ok')}
           </div>
           <div style={{ fontSize: 13, color: 'rgba(240,253,244,0.85)', lineHeight: 1.5, fontFamily: 'var(--stt-font-sinhala)' }}>
             {message}
@@ -402,11 +373,11 @@ const ConfirmModal = ({ open, onClose, onConfirm, title, message, cancelText, co
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ ...secondaryBtn(), flex: 1, height: 42, fontSize: 13, fontFamily: 'var(--stt-font-sinhala)', fontWeight: 800 }}>
-            {cancelText || 'ආපසු'}
+            {cancelText || t('back')}
           </button>
           {onConfirm && (
             <button onClick={() => { onConfirm(); onClose(); }} style={{ ...primaryBtn(confirmColor || '#4ade80'), flex: 1, height: 42, fontSize: 13, fontFamily: 'var(--stt-font-sinhala)', fontWeight: 800 }}>
-              {confirmText || 'තහවුරු කරන්න'}
+              {confirmText || t('ok')}
             </button>
           )}
         </div>

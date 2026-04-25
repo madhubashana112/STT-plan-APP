@@ -81,7 +81,7 @@ const SttAppNotebook = () => {
 
         {/* Task checklist */}
         {week.tasks.map(t => {
-          const subj = subjById[t.subject];
+          const subj = subjById[t.subject] || { color: '#888', label: t.subject };
           const isDone = !!done[t.id];
           return (
             <div key={t.id} onClick={() => toggleDone(t.id)} style={{
@@ -219,7 +219,7 @@ const SttAppMinimal = () => {
 
         {/* Tasks */}
         {week.tasks.map(t => {
-          const subj = subjById[t.subject];
+          const subj = subjById[t.subject] || { color: '#888', label: t.subject };
           const isDone = !!done[t.id];
           return (
             <div key={t.id} onClick={() => toggleDone(t.id)} style={{

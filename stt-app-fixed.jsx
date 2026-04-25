@@ -1,6 +1,6 @@
-// ── Branch color palette (matches reference: Green / Teal / Pink) ──
-const BRANCH_COLORS = { b1: '#4ade80', b2: '#38bdf8', b3: '#fcd34d', b4: '#f472b6' };
-const BRANCH_DARK = { b1: '#166534', b2: '#0369a1', b3: '#b45309', b4: '#be185d' };
+﻿// ── Branch color palette (matches reference: Green / Teal / Pink) ──
+const BRANCH_COLORS = { b1: '#4ade80', b2: '#38bdf8', b3: '#f472b6' };
+const BRANCH_DARK = { b1: '#166534', b2: '#0369a1', b3: '#be185d' };
 
 // ── Constants & Helpers ──
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -83,7 +83,7 @@ const MiniTree = ({ progress = 0, color = '#4ade80', numbered = false }) => {
 
 const TodayLeafMap = ({ activeWeek, hours, t, lang, setInfoOpen, season, theme }) => {
   const weekTarget = 7; // simplified for now or pass as prop
-  const branchTarget = Math.ceil(weekTarget / 4);
+  const branchTarget = Math.ceil(weekTarget / 3);
   const stageName = getStageName(activeWeek, t);
 
   return (
@@ -105,7 +105,6 @@ const TodayLeafMap = ({ activeWeek, hours, t, lang, setInfoOpen, season, theme }
             { color: BRANCH_COLORS.b1, colorDark: BRANCH_DARK.b1, currentHrs: (hours || {}).b1, targetHrs: branchTarget },
             { color: BRANCH_COLORS.b2, colorDark: BRANCH_DARK.b2, currentHrs: (hours || {}).b2, targetHrs: branchTarget },
             { color: BRANCH_COLORS.b3, colorDark: BRANCH_DARK.b3, currentHrs: (hours || {}).b3, targetHrs: branchTarget },
-            { color: BRANCH_COLORS.b4, colorDark: BRANCH_DARK.b4, currentHrs: (hours || {}).b4, targetHrs: branchTarget },
           ]}
           size={240} glow={true} week={activeWeek}
           season={season} theme={theme}
@@ -127,7 +126,7 @@ const MonthTab = ({ m, activeMonth, setActiveMonth, userStartMonth, hoursMap, se
   if (m > userStartMonth) {
     const lastWeekOfPrevMonth = (m - 1) * 4;
     const prevH = hoursMap[lastWeekOfPrevMonth] || {};
-    const totalPrev = Number(prevH.b1 || 0) + Number(prevH.b2 || 0) + Number(prevH.b3 || 0) + Number(prevH.b4 || 0);
+    const totalPrev = Number(prevH.b1 || 0) + Number(prevH.b2 || 0) + Number(prevH.b3 || 0);
     if (totalPrev < 7) locked = true;
   }
   return (
@@ -160,7 +159,7 @@ const WeekTab = ({ w, activeWeek, setActiveWeek, hoursMap, userStartWeek, data, 
   if (w.id > userStartWeek) {
     const prevW = w.id - 1;
     const prevH = hoursMap[prevW] || {};
-    const totalPrev = Number(prevH.b1 || 0) + Number(prevH.b2 || 0) + Number(prevH.b3 || 0) + Number(prevH.b4 || 0);
+    const totalPrev = Number(prevH.b1 || 0) + Number(prevH.b2 || 0) + Number(prevH.b3 || 0);
     const prevWeekData = data.weeks.find(x => x.id === prevW);
     const prevTarget = prevWeekData ? prevWeekData.targetHrs : 7;
     if (totalPrev < prevTarget) locked = true;
@@ -210,12 +209,11 @@ const StatCard = ({ label, value, icon, color, unit }) => (
 
 const BranchCounters = ({ hours, week, t, bumpHour }) => {
   const weekTarget = week.targetHrs || 7;
-  const branchTarget = Math.ceil(weekTarget / 4);
+  const branchTarget = Math.ceil(weekTarget / 3);
   const cards = [
-    { key: 'b1', label: 'Class / Rec', label2: 'නව කොටස', color: BRANCH_COLORS.b1 },
-    { key: 'b2', label: 'Study', label2: 'Active Recall', color: BRANCH_COLORS.b2 },
-    { key: 'b3', label: 'Practice', label2: 'ප්‍රශ්න කිරීම', color: BRANCH_COLORS.b3 },
-    { key: 'b4', label: 'Revision', label2: 'Spaced Rep', color: BRANCH_COLORS.b4 },
+    { key: 'b1', label: t('class'), label2: t('recording'), color: BRANCH_COLORS.b1 },
+    { key: 'b2', label: t('study'), label2: t('short_notes'), color: BRANCH_COLORS.b2 },
+    { key: 'b3', label: t('paper'), label2: t('revision'), color: BRANCH_COLORS.b3 },
   ];
   return (
     <div style={{ display: 'flex', gap: 8 }}>
@@ -246,72 +244,24 @@ const BranchCounters = ({ hours, week, t, bumpHour }) => {
   );
 };
 
-const StudyAnalytics = ({ hours, summary, t, activeWeek = 1, hoursMap = {} }) => {
-  const maxH = Math.max(1, hours.b1 || 0, hours.b2 || 0, hours.b3 || 0, hours.b4 || 0, 10);
-  
-  const currentWeekHours = (hours.b1 || 0) + (hours.b2 || 0) + (hours.b3 || 0) + (hours.b4 || 0);
-  const weeklyTarget = 28; // 7h * 4 branches
-  const weeklyPct = Math.min(100, Math.round((currentWeekHours / weeklyTarget) * 100));
-
-  const currentMonth = Math.floor((activeWeek - 1) / 4); // 0-based
-  const startWeek = currentMonth * 4 + 1;
-  let currentMonthHours = 0;
-  for (let i = startWeek; i <= startWeek + 3; i++) {
-    const h = hoursMap[i] || {};
-    currentMonthHours += (h.b1 || 0) + (h.b2 || 0) + (h.b3 || 0) + (h.b4 || 0);
-  }
-  const monthlyTarget = 28 * 4;
-  const monthlyPct = Math.min(100, Math.round((currentMonthHours / monthlyTarget) * 100));
-
+const StudyAnalytics = ({ hours, summary, t }) => {
+  const maxH = Math.max(1, hours.b1 || 0, hours.b2 || 0, hours.b3 || 0, 10);
   return (
     <div style={{ padding: '0 16px 30px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <section>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(240,253,244,0.7)', marginBottom: 12, fontFamily: 'var(--stt-font-sinhala)' }}>{t('study_analytics')}</div>
-        <div style={{ background: 'rgba(16,32,20,0.6)', borderRadius: 20, padding: '20px 16px 20px', border: '1px solid rgba(74,222,128,0.15)' }}>
-          
-          {/* Bar Chart (Branch Breakdown) */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 110, marginBottom: 24 }}>
-            {[
-              { id: 'b1', label: t('class_short'), color: BRANCH_COLORS.b1, val: hours.b1 || 0 },
-              { id: 'b2', label: t('study_short'), color: BRANCH_COLORS.b2, val: hours.b2 || 0 },
-              { id: 'b3', label: 'PRAC', color: BRANCH_COLORS.b3, val: hours.b3 || 0 },
-              { id: 'b4', label: 'REV', color: BRANCH_COLORS.b4, val: hours.b4 || 0 },
-            ].map(b => (
-              <div key={b.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 12, color: '#fff', fontWeight: 900 }}>{b.val}h</div>
-                <div style={{ width: '100%', maxWidth: 40, height: Math.max(6, (b.val / maxH) * 80), background: `linear-gradient(180deg, ${b.color}, ${b.color}40)`, borderRadius: '10px 10px 6px 6px', position: 'relative', overflow: 'hidden' }} />
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Donut Charts */}
-          <div style={{ display: 'flex', gap: 12, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 20 }}>
-            {[
-              { id: 'weekly', pct: weeklyPct, color: '#4ade80', label: t('weekly_trend'), subLabel: `${t('week')} ${activeWeek}` },
-              { id: 'monthly', pct: monthlyPct, color: '#60a5fa', label: `${t('month')} ${currentMonth + 1}`, subLabel: 'Progress' }
-            ].map(d => {
-              const r = 32;
-              const c = 2 * Math.PI * r;
-              const offset = c - (d.pct / 100) * c;
-              return (
-                <div key={d.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '16px 8px', borderRadius: 16, border: `1px solid ${d.color}30` }}>
-                  <div style={{ position: 'relative', width: 80, height: 80, marginBottom: 8 }}>
-                    <svg width="80" height="80" style={{ transform: 'rotate(-90deg)' }}>
-                      <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-                      <circle cx="40" cy="40" r={r} fill="none" stroke={d.color} strokeWidth="8" strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease', filter: `drop-shadow(0 0 6px ${d.color}80)` }} />
-                    </svg>
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{d.pct}%</span>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }}>{d.label}</div>
-                  <div style={{ fontSize: 10, color: d.color, fontWeight: 600, marginTop: 4 }}>{d.subLabel}</div>
-                </div>
-              );
-            })}
-          </div>
-
+        <div style={{ background: 'rgba(16,32,20,0.6)', borderRadius: 20, padding: '20px 12px 16px', border: '1px solid rgba(74,222,128,0.15)', display: 'flex', alignItems: 'flex-end', gap: 12, height: 150 }}>
+          {[
+            { id: 'b1', label: t('class_short'), color: BRANCH_COLORS.b1, val: hours.b1 || 0 },
+            { id: 'b2', label: t('study_short'), color: BRANCH_COLORS.b2, val: hours.b2 || 0 },
+            { id: 'b3', label: t('paper_short'), color: BRANCH_COLORS.b3, val: hours.b3 || 0 },
+          ].map(b => (
+            <div key={b.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontSize: 12, color: '#fff', fontWeight: 900 }}>{b.val}h</div>
+              <div style={{ width: '100%', maxWidth: 40, height: Math.max(6, (b.val / maxH) * 80), background: `linear-gradient(180deg, ${b.color}, ${b.color}40)`, borderRadius: '10px 10px 6px 6px', position: 'relative', overflow: 'hidden' }} />
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</div>
+            </div>
+          ))}
         </div>
       </section>
     </div>
@@ -732,7 +682,7 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
 
   const activeTrees = data.weeks.filter(w => {
     const h = hoursMap[w.id];
-    return h && (h.b1 > 0 || h.b2 > 0 || h.b3 > 0 || h.b4 > 0 || w.id === S.activeWeek);
+    return h && (h.b1 > 0 || h.b2 > 0 || h.b3 > 0 || w.id === S.activeWeek);
   });
 
   return (
@@ -766,8 +716,8 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
         padding: '0 40px 80px', gap: 60,
       }}>
         {activeTrees.map((w, i) => {
-          const h = hoursMap[w.id] || { b1: 0, b2: 0, b3: 0, b4: 0 };
-          const totalH = h.b1 + h.b2 + h.b3 + h.b4;
+          const h = hoursMap[w.id] || { b1: 0, b2: 0, b3: 0 };
+          const totalH = h.b1 + h.b2 + h.b3;
           
           return (
             <div key={w.id} style={{
@@ -799,7 +749,6 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
                   { color: BRANCH_COLORS.b1, currentHrs: Math.min(7, h.b1) },
                   { color: BRANCH_COLORS.b2, currentHrs: Math.min(7, h.b2) },
                   { color: BRANCH_COLORS.b3, currentHrs: Math.min(7, h.b3) },
-                  { color: BRANCH_COLORS.b4, currentHrs: Math.min(7, h.b4) },
                 ]}
               />
             </div>
@@ -831,7 +780,6 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
           <div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>TOTAL XP</div>
             <div style={{ fontSize: 14, fontWeight: 900, color: '#fff' }}>{summary.xp.toLocaleString()}</div>
-            <div style={{ fontSize: 9, color: '#4ade80', fontWeight: 800, marginTop: 1 }}>{summary.xp >= 2000 ? '💎 DIAMOND' : summary.xp >= 1000 ? '🥇 GOLD' : summary.xp >= 500 ? '🥈 SILVER' : '🥉 BRONZE'}</div>
           </div>
         </div>
         <div style={{
@@ -839,10 +787,10 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
           border: '1px solid rgba(250,204,21,0.2)', borderRadius: 14,
           padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10
         }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(250,204,21,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{streak.count >= 3 ? '🔥' : '⚡'}</div>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(250,204,21,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🔥</div>
           <div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>STREAK</div>
-            <div style={{ fontSize: 14, fontWeight: 900, color: streak.count >= 3 ? '#f97316' : '#fff' }}>{streak.count} DAYS</div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: '#fff' }}>{streak.count} DAYS</div>
           </div>
         </div>
       </div>
@@ -907,6 +855,7 @@ const MainApp = ({ onLogout }) => {
   const [activeTimerTask, setActiveTimerTask] = React.useState(null);
   const [badgesOpen, setBadgesOpen] = React.useState(false);
   const [fabOpen, setFabOpen] = React.useState(false);
+  const [notifOpen, setNotifOpen] = React.useState(false);
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [nameEditing, setNameEditing] = React.useState(false);
   const [tab, setTab] = React.useState('home');
@@ -1034,7 +983,7 @@ const MainApp = ({ onLogout }) => {
 
       {/* Version */}
       <div style={{ textAlign: 'center', marginTop: 10, opacity: 0.38 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>STT PLAN v1.3.0</div>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>STT PLAN v1.2.1</div>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, marginTop: 3, fontFamily: 'monospace' }}>
           &lt; Solo Developer /... &gt;
         </div>
@@ -1099,6 +1048,18 @@ const MainApp = ({ onLogout }) => {
             display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             color: '#38bdf8', fontSize: 14
           }}>❓</button>
+          <button onClick={() => setNotifOpen(true)} style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'rgba(16,32,20,0.8)', border: '1px solid rgba(74,222,128,0.2)',
+            position: 'relative', fontSize: 13,
+          }}>
+            🔔
+            <span style={{
+              position: 'absolute', top: 4, right: 5,
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#f472b6', boxShadow: '0 0 4px #f472b6',
+            }} />
+          </button>
           <button onClick={() => setTab('settings')} style={{
             background: 'none', border: 'none', padding: 0, cursor: 'pointer', outline: 'none'
           }}>
@@ -1149,7 +1110,7 @@ const MainApp = ({ onLogout }) => {
             </div>
 
             <div style={{ display: 'flex', gap: 8, padding: '0 16px 14px' }}>
-              <StatCard label={t('streak')} icon={streak.count >= 3 ? "🔥" : "⚡"} value={streak.count ?? 0} unit={t('days')} color={streak.count >= 3 ? "#f97316" : "#4ade80"} />
+              <StatCard label={t('streak')} icon="🔥" value={streak.count ?? 0} unit={t('days')} color="#4ade80" />
               <StatCard label={t('xp')} icon="✨" value={summary.xp.toLocaleString()} color="#86efac" />
               <StatCard label={t('grade')} icon="🎓" value={userGrade} color="#22d3a0" />
             </div>
@@ -1187,14 +1148,14 @@ const MainApp = ({ onLogout }) => {
               <div style={{
                 background: 'linear-gradient(135deg, rgba(250,204,21,0.1), rgba(234,179,8,0.05))',
                 borderRadius: 20, padding: '16px 18px', border: '1px solid rgba(250,204,21,0.2)',
-                display: 'flex', gap: 12, alignItems: 'center'
+                display: 'flex', gap: 12, alignItems: 'flex-start'
               }}>
-                <span style={{ fontSize: 24, display: 'flex', alignItems: 'center' }}>💡</span>
+                <span style={{ fontSize: 24 }}>💡</span>
                 <div style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--stt-font-sinhala)', lineHeight: 1.6, fontStyle: 'italic', fontWeight: 500 }}>{randomQuote}</div>
               </div>
             </div>
 
-            <StudyAnalytics hours={hours} summary={summary} t={t} activeWeek={activeWeek} hoursMap={hoursMap} />
+            <StudyAnalytics hours={hours} summary={summary} t={t} />
 
             {/* Active week task list (scrolls below) */}
             <div style={{ padding: '4px 14px 0' }}>
@@ -1250,8 +1211,8 @@ const MainApp = ({ onLogout }) => {
                 if (m > userStartMonth) {
                   const prevM = m - 1;
                   const lastW = prevM * 4;
-                  const h = hoursMap[lastW] || { b1: 0, b2: 0, b3: 0, b4: 0 };
-                  if ((h.b1 + h.b2 + h.b3 + h.b4) < 7) isLocked = true;
+                  const h = hoursMap[lastW] || { b1: 0, b2: 0, b3: 0 };
+                  if ((h.b1 + h.b2 + h.b3) < 7) isLocked = true;
                 }
                 return (
                   <div key={m} onClick={() => {
@@ -1348,31 +1309,20 @@ const MainApp = ({ onLogout }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '18px 20px', borderBottom: '1px solid rgba(74,222,128,0.15)' }}>
               <span style={{ fontSize: 22 }}>📘</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff' }}>STT PLAN <span style={{ color: '#4ade80' }}>අත්පොත</span></div>
-                <div style={{ fontSize: 10, color: 'rgba(134,239,172,0.7)', letterSpacing: 1, textTransform: 'uppercase', fontWeight: 700 }}>User Manual • With CK Sir</div>
-              </div>
-              <button onClick={() => { setInfoOpen(false); localStorage.removeItem('stt.justRegistered'); }} style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.08)', color: '#ffffff',
-                fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>×</button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff' }}>STT PLAN <span style={{ color: '#4ade80' }}>අත්පොත</span></di            {/* Scrollable Content */}
+            <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
 
               {/* 1. STT Branches */}
               <section>
                 <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 4, height: 14, background: '#4ade80', borderRadius: 2 }}></span>
-                  01. STT අතු 4 ක්‍රමය
+                  01. STT අතු 3 ක්‍රමය
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { color: BRANCH_COLORS.b1, title: 'Branch 01 — Green', desc: 'නව කොටසක් පාඩම් කිරීම / කියවීම/Recording/class' },
-                    { color: BRANCH_COLORS.b2, title: 'Branch 02 — Blue', desc: 'පොත වසා කරුණු මතකයෙන් ආවර්ජනය කිරීම (Active Recall).' },
-                    { color: BRANCH_COLORS.b3, title: 'Branch 03 — Yellow', desc: 'එම කොටසට අදාළව ප්රශ්න කිරීම / බහුවරණ ගැටලු විසඳීම (Practice Testing).' },
-                    { color: BRANCH_COLORS.b4, title: 'Branch 04 — Pink', desc: 'පෙර සතිවල ඉගෙන ගත් දේවල් නැවත මතක් කිරීම (Spaced Repetition)' },
+                    { color: BRANCH_COLORS.b1, title: 'Branch 01 — Green', desc: 'Class / Recording: පන්තියට සහභාගී වීම හෝ Recordings බැලීම.' },
+                    { color: BRANCH_COLORS.b2, title: 'Branch 02 — Blue', desc: 'Study / Short Notes: තනිවම පාඩම් කිරීම සහ සටහන් සෑදීම.' },
+                    { color: BRANCH_COLORS.b3, title: 'Branch 03 — Pink', desc: 'Paper / Revision: ප්‍රශ්න පත්‍ර කිරීම හා අමාරු කොටස් ආවර්ජනය.' },
                   ].map(b => (
                     <div key={b.title} style={{ display: 'flex', gap: 10 }}>
                       <div style={{ width: 12, height: 12, borderRadius: '50%', background: b.color, boxShadow: `0 0 8px ${b.color}`, marginTop: 4, flexShrink: 0 }} />
@@ -1384,38 +1334,94 @@ const MainApp = ({ onLogout }) => {
                 </div>
               </section>
 
-              {/* 2. Tree Growth */}
+              {/* 2. Tree Growth — UPDATED */}
               <section style={{ background: 'rgba(74,222,128,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(74,222,128,0.1)' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#fde047', marginBottom: 6 }}>02. ගස් වර්ධනය (Tree Growth)</div>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, margin: 0 }}>
-                  ඔයා පාඩම් කරන සෑම <span style={{ color: '#fff', fontWeight: 700 }}>පැය 1කටම</span> ගසේ <span style={{ color: '#fff', fontWeight: 700 }}>එක් රවුමක් (Circle)</span> බැගින් පත්තුවේ.
-                  සතියෙන් සතිය ඔයාගේ "පැළය" ලොකු ගසක් දක්වා වර්ධනය වෙන හැටි ඔයාට බලාගන්න පුළුවන්.
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#fde047', marginBottom: 8 }}>02. ගස් වර්ධනය (Tree Growth) 🌱</div>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6, margin: '0 0 8px' }}>
+                  ඔයා පාඩම් කරන සෑම <span style={{ color: '#fff', fontWeight: 700 }}>පැය 1කටම</span> ගසේ <span style={{ color: '#fff', fontWeight: 700 }}>එක් රවුමක් (Circle)</span> බැගින් පත්තු වේ.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {[
+                    { w: 'Week 1', icon: '🌱', desc: 'Tiny Seedling — කුඩා පැළය' },
+                    { w: 'Week 2', icon: '🌿', desc: 'Small Tree — ටිකක් වැඩෙනවා' },
+                    { w: 'Week 3', icon: '🌳', desc: 'Young Tree — ශාඛා 3ක් ලොකු වේ' },
+                    { w: 'Week 4', icon: '🌲', desc: 'Full Tree — සම්පූර්ණ ශාඛා + ඝන කඳ' },
+                  ].map(row => (
+                    <div key={row.w} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>
+                      <span style={{ fontSize: 14 }}>{row.icon}</span>
+                      <span><strong style={{ color: '#86efac' }}>{row.w}:</strong> {row.desc}</span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 10.5, color: 'rgba(134,239,172,0.7)', margin: '8px 0 0', fontStyle: 'italic' }}>
+                  ✨ නව month ආරම්භයේදී ගස නැවතත් Seedling ලෙස reset වී grow වේ.
                 </p>
               </section>
 
-              {/* 3. XP System */}
+              {/* 3. Pomodoro — UPDATED */}
+              <section style={{ background: 'rgba(56,189,248,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(56,189,248,0.1)' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8', marginBottom: 8 }}>03. Pomodoro ටයිමරය ⏱️</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+                  <div>📚 <strong style={{ color: '#fff' }}>25 min Study</strong> → ⏰ Bell → ☕ <strong style={{ color: '#fff' }}>5 min Break</strong> — ස්වයංක්‍රීයව!</div>
+                  <div>🔔 Break ආරම්භ වූ විට <strong style={{ color: '#fff' }}>Browser Notification</strong> සහ ශබ්දයක් ලැබේ.</div>
+                  <div>Task timer button (🕐) click කිරීමෙන් ඕනෑම task එකක් සඳහා Pomodoro ආරම්භ කළ හැකිය.</div>
+                  <div style={{ marginTop: 4, padding: '6px 10px', background: 'rgba(56,189,248,0.1)', borderRadius: 8, fontSize: 10.5, color: 'rgba(200,240,255,0.8)' }}>
+                    💡 Break ලෙස ඇසෙන Bell ශබ්දය web audio (synthetic) ය. Mobile ලා පළමු click ෙකන් audio unlock කරන්න.
+                  </div>
+                </div>
+              </section>
+
+              {/* 4. XP System */}
               <section>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>03. XP සහ දක්ෂතා (Gamification)</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>04. XP සහ දක්ෂතා (Gamification) 🏆</div>
                 <ul style={{ paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>සෑම පාඩම් පැයකටම <span style={{ color: '#4ade80', fontWeight: 700 }}>10 XP</span> බැගින් ලැබේ.</li>
-                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>Task එකක් අවසන් කළ විට සහ දිගටම පාඩම් කරන විට (Streak) අමතර ලකුණු ලැබේ.</li>
-                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>XP සියල්ල මුළු මාසයටම අදාළව (Monthly cumulative) ගණනය වේ.</li>
+                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>Task අවසන් කළ විට සහ Streak (දිගටම) කරන විට අමතර XP ලැබේ.</li>
+                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>Grow tab ලා XP leaderboard සහ badges බලාගත හැක.</li>
                 </ul>
-              </section>
-
-              {/* 4. Timer & Focus */}
-              <section style={{ background: 'rgba(56,189,248,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(56,189,248,0.1)' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8', marginBottom: 6 }}>04. Pomodoro ටයිමරය</div>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, margin: 0 }}>
-                  අවධානය වැඩි කරගැනීමට ටයිමරය භාවිතා කරන්න. විනාඩි 25ක් පාඩම් කර විනාඩි 5ක විවේකයක් ගැනීම ඔබේ මතක ශක්තිය වැඩි කිරීමට උපකාරී වේ.
-                </p>
               </section>
 
               {/* 5. Custom Tasks */}
               <section>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>05. තමන්ගේම Tasks එකතු කිරීම</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>05. Tasks එකතු කිරීම ✅</div>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, margin: 0 }}>
-                  පහළ ඇති <span style={{ color: '#4ade80' }}>"+"</span> බොත්තමෙන් ඔයාගේ පෞද්ගලික වැඩ එකතු කරන්න. මෙහිදී O/L විෂයන් 9 ම තෝරාගැනීමට අවස්ථාව ඇත.
+                  පහළ ඇති <span style={{ color: '#4ade80', fontWeight: 700 }}>「+」</span> බොත්තමෙන් ඔයාගේ tasks add කරන්න. O/L විෂයන් 9 (Green/Blue/Pink) ඕනෑ ඒකක් select කළ හැකිය. Task ලා week-by-week save වේ.
+                </p>
+              </section>
+
+              {/* 6. Settings — NEW */}
+              <section style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#c084fc', marginBottom: 8 }}>06. Settings ⚙️</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+                  <div>🌐 <strong style={{ color: '#fff' }}>App Language</strong> — English / සිංහල / தமிழ் change කරන්න.</div>
+                  <div>📱 <strong style={{ color: '#fff' }}>WhatsApp + Telegram</strong> — CK Sir ගේ Channels join කරන්න.</div>
+                  <div>✍️ <strong style={{ color: '#fff' }}>Class Enrollment</strong> — 075 058 7944 WhatsApp / 070 121 7700 Hotline.</div>
+                  <div>📘 <strong style={{ color: '#fff' }}>User Manual</strong> button — ඕනෑ වෙලාවක manual නැවත බලන්න.</div>
+                  <div>🚪 <strong style={{ color: '#fff' }}>Logout</strong> — Page ලා ලා ලා ලා bottom ලා ලා ලා.</div>
+                </div>
+              </section>
+
+              {/* 7. Channels */}
+              <section style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>වැඩිදුර උපදෙස් සඳහා සම්බන්ධ වන්න</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button onClick={() => window.open('https://www.whatsapp.com/channel/0029VasliMrFcowGIPn8ID2h', '_blank')} style={{
+                    padding: '8px 16px', borderRadius: 10, background: '#25D366', color: '#fff', border: 'none',
+                    fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', width: '100%'
+                  }}>
+                    Join CK Sir WhatsApp Channel 📢
+                  </button>
+                  <button onClick={() => window.open('https://t.me/epaperesathkaraya', '_blank')} style={{
+                    padding: '8px 16px', borderRadius: 10, background: '#229ED9', color: '#fff', border: 'none',
+                    fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', width: '100%'
+                  }}>
+                    ✈️ Join Telegram Channel
+                  </button>
+                </div>
+              </section>
+
+            </div>
+��ික වැඩ එකතු කරන්න. මෙහිදී O/L විෂයන් 9 ම තෝරාගැනීමට අවස්ථාව ඇත.
                 </p>
               </section>
 
@@ -1455,6 +1461,41 @@ const MainApp = ({ onLogout }) => {
         </div>
       )}
 
+      {/* Notification panel */}
+      {notifOpen && (
+        <div onClick={() => setNotifOpen(false)} style={{
+          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
+          zIndex: 100, backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+          paddingTop: 70, animation: 'sttFadeIn .15s',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '85%', maxWidth: 300,
+            background: 'linear-gradient(180deg, #0f1f14, #050a06)',
+            border: '1px solid rgba(74,222,128,0.3)',
+            borderRadius: 14, padding: 14,
+          }}>
+            <div style={{ fontWeight: 700, fontSize: 12, color: '#86efac', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+              🔔 Reminders
+              <button onClick={() => setNotifOpen(false)} style={{ color: 'rgba(240,253,244,0.72)', fontSize: 14 }}>✕</button>
+            </div>
+            {[
+              { dot: '#f472b6', text: 'අද tasks 4ක් pending', time: '2 min', font: true },
+              { dot: '#fcd34d', text: 'CK sir live class · 7.00 PM', time: '2h', font: true },
+              { dot: '#4ade80', text: 'Week 4 deadline ළඟයි — 3 දවසයි', time: '1d', font: true },
+            ].map((n, i) => (
+              <div key={i} style={{
+                padding: '8px 0', borderBottom: i < 2 ? '1px solid rgba(74,222,128,0.08)' : 'none',
+                display: 'flex', gap: 8, alignItems: 'flex-start',
+              }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: n.dot, marginTop: 4, boxShadow: `0 0 6px ${n.dot}` }} />
+                <div style={{ flex: 1, fontSize: 11, color: '#f0fdf4', fontFamily: 'var(--stt-font-sinhala)' }}>{n.text}</div>
+                <div style={{ fontSize: 9, color: 'rgba(240,253,244,0.72)' }}>{n.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* FAB Overlay + Menu */}
       {fabOpen && (
@@ -1554,3 +1595,4 @@ const SttApp = () => {
 };
 
 window.SttApp = SttApp;
+

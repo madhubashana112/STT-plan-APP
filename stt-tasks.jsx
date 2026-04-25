@@ -99,10 +99,8 @@ const TaskRow = ({ task, done, note, subject, onToggle, onNote, onTimer, onRemov
 // ===== Pomodoro modal =====
 const PomodoroModal = ({ open, onClose, task }) => {
   const { seconds, running, start, pause, reset, setPresetMin, preset, isBreak } = usePomodoro();
-  const [lofiOn, setLofiOn] = React.useState(false);
   const [customOpen, setCustomOpen] = React.useState(false);
   const [customVal, setCustomVal] = React.useState('25');
-  const audioRef = React.useRef(null);
   
   React.useEffect(() => {
     if (open && task && task.minutes) {
@@ -111,18 +109,6 @@ const PomodoroModal = ({ open, onClose, task }) => {
     }
   }, [open, task?.id]);
 
-  React.useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.5;
-      if (lofiOn && running) {
-        audioRef.current.play().catch(err => {
-          console.warn("Audio play blocked:", err);
-        });
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [lofiOn, running]);
 
   if (!open) return null;
   const totalSec = preset * 60;
@@ -139,7 +125,6 @@ const PomodoroModal = ({ open, onClose, task }) => {
   return (
     <div onClick={onClose} style={modalBg()}>
       <div onClick={e => e.stopPropagation()} style={{ ...modalCard(), position: 'relative' }}>
-        <audio ref={audioRef} src="https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2443.mp3" loop />
         
         {/* In-app Custom Time Popup */}
         {customOpen && (
@@ -176,25 +161,10 @@ const PomodoroModal = ({ open, onClose, task }) => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           {task?.title ? (
-            <div style={{ fontSize: 11, color: 'rgba(240,253,244,0.88)', fontFamily: 'var(--stt-font-sinhala)', maxWidth: '60%' }}>
+            <div style={{ fontSize: 11, color: 'rgba(240,253,244,0.88)', fontFamily: 'var(--stt-font-sinhala)', maxWidth: '90%' }}>
                {task.title}
             </div>
           ) : <div style={{ fontSize: 11, color: '#86efac', fontWeight: 700 }}>{isBreak ? '☕ Break Time' : '✍️ Study Mode'}</div>}
-          
-          <button onClick={() => {
-            const next = !lofiOn;
-            setLofiOn(next);
-            if (next && audioRef.current) {
-              audioRef.current.play().catch(err => console.warn("Lofi play failed:", err));
-            }
-          }} style={{
-            fontSize: 10, padding: '4px 8px', borderRadius: 8,
-            background: lofiOn ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.05)',
-            color: lofiOn ? '#86efac' : '#fff', border: `1px solid ${lofiOn ? '#4ade80' : 'transparent'}`,
-            transition: 'all 0.2s', fontWeight: 600
-          }}>
-            {lofiOn ? '🎧 Lofi: ON' : '🎧 Lofi: OFF'}
-          </button>
         </div>
 
         <svg viewBox="0 0 200 200" width="180" height="180" style={{ display: 'block', margin: '0 auto' }}>
@@ -217,18 +187,36 @@ const PomodoroModal = ({ open, onClose, task }) => {
           </text>
         </svg>
 
+        {/* Study time presets */}
         <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
           {[15, 25, 45, 60].map(m => (
-            <button key={m} onClick={() => setPresetMin(m)} style={{
+            <button key={m} onClick={() => setPresetMin(m, false)} style={{
               width: 38, height: 32, borderRadius: 8, fontSize: 11, fontWeight: 800,
-              background: preset === m ? (isBreak ? '#38bdf8' : '#4ade80') : 'rgba(255,255,255,0.08)',
-              color: preset === m ? '#0a0e0b' : '#fff', border: 'none', transition: 'all 0.2s'
+              background: preset === m && !isBreak ? '#4ade80' : 'rgba(255,255,255,0.08)',
+              color: preset === m && !isBreak ? '#0a0e0b' : '#fff', border: 'none', transition: 'all 0.2s'
             }}>{m}m</button>
           ))}
           <button onClick={() => setCustomOpen(true)} style={{
             padding: '0 10px', height: 32, borderRadius: 8, fontSize: 11, fontWeight: 800,
             background: 'rgba(255,255,255,0.12)', color: '#fff', border: 'none'
           }}>Custom</button>
+        </div>
+
+        {/* Break button */}
+        <div style={{ margin: '10px 0 0', display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={() => { setPresetMin(5, true); start(); }}
+            style={{
+              width: '100%', height: 36, borderRadius: 10, fontSize: 12, fontWeight: 800,
+              background: isBreak ? '#38bdf8' : 'rgba(56,189,248,0.15)',
+              color: isBreak ? '#0a0e0b' : '#38bdf8',
+              border: `1.5px solid ${isBreak ? '#38bdf8' : 'rgba(56,189,248,0.4)'}`,
+              transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              boxShadow: isBreak ? '0 0 12px rgba(56,189,248,0.5)' : 'none'
+            }}
+          >
+            ☕ 5min Break
+          </button>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'center' }}>
@@ -317,13 +305,13 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>Task එකේ නම (උදා: Bio Past Paper)</label>
             <input autoFocus value={title} onChange={e => setTitle(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>විෂය (Subject)</label>
             <select value={subject} onChange={e => setSubject(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             >
               <option value="sci">විද්‍යාව (Science)</option>
               <option value="math">ගණිතය (Maths)</option>
@@ -339,13 +327,13 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>විස්තරයක් (අත්‍යවශ්‍ය නැත)</label>
             <textarea value={detail} onChange={e => setDetail(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 12, minHeight: 60, resize: 'vertical', outline: 'none', fontFamily: 'var(--stt-font-sinhala)' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 12, minHeight: 80, resize: 'none', outline: 'none', fontFamily: 'var(--stt-font-sinhala)', boxSizing: 'border-box' }}
             />
           </div>
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>ගතවන කාලය (විනාඩි)</label>
             <input type="number" value={minutes} onChange={e => setMinutes(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
           <button type="submit" disabled={!title.trim()} style={{ ...primaryBtn(), marginTop: 8, opacity: title.trim() ? 1 : 0.5, fontFamily: 'var(--stt-font-sinhala)' }}>
@@ -365,9 +353,12 @@ const modalBg = () => ({
   zIndex: 100, padding: 16,
 });
 const modalCard = () => ({
-  background: '#050a06',
-  borderRadius: 16, padding: 16, width: '100%', maxWidth: 320,
-  border: '1px solid rgba(74,222,128,0.25)',
+  background: 'linear-gradient(180deg, #0f1f14, #050a06)',
+  borderRadius: 24, padding: 20, width: '100%', maxWidth: 340,
+  border: '1.5px solid rgba(74,222,128,0.35)',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(74,222,128,0.1)',
+  boxSizing: 'border-box',
+  position: 'relative'
 });
 const closeBtn = () => ({
   width: 24, height: 24, borderRadius: 6,
@@ -392,7 +383,7 @@ const ConfirmModal = ({ open, onClose, onConfirm, title, message, cancelText, co
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>❓</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', marginBottom: 8, fontFamily: 'var(--stt-font-sinhala)' }}>
-            {title || 'පණිවිඩයක්'}
+            {title || t('ok')}
           </div>
           <div style={{ fontSize: 13, color: 'rgba(240,253,244,0.85)', lineHeight: 1.5, fontFamily: 'var(--stt-font-sinhala)' }}>
             {message}
@@ -400,11 +391,11 @@ const ConfirmModal = ({ open, onClose, onConfirm, title, message, cancelText, co
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ ...secondaryBtn(), flex: 1, height: 42, fontSize: 13, fontFamily: 'var(--stt-font-sinhala)', fontWeight: 800 }}>
-            {cancelText || 'ආපසු'}
+            {cancelText || t('back')}
           </button>
           {onConfirm && (
             <button onClick={() => { onConfirm(); onClose(); }} style={{ ...primaryBtn(confirmColor || '#4ade80'), flex: 1, height: 42, fontSize: 13, fontFamily: 'var(--stt-font-sinhala)', fontWeight: 800 }}>
-              {confirmText || 'තහවුරු කරන්න'}
+              {confirmText || t('ok')}
             </button>
           )}
         </div>

@@ -259,9 +259,16 @@ window.DICT = {
     add_new_task: '+ புதிய பணியைச் சேர்',
     del_task_title: 'பணியை நீக்கவா?',
     del_task_msg: 'இந்தப் பணியை நிரந்தரமாக நீக்க விரும்புகிறீர்களா?',
-    tasks_left: 'பணிகள் A9 பயன்முறைக்கு செல்ல மீதமுள்ளன!',
-    developed_with: 'உருவாக்கப்பட்டது',
-    for_students: 'CK Sir மாணவர்களுக்காக'
+    for_students: 'CK Sir மாணவர்களுக்காக',
+    weekly_trend: 'வாராந்திர போக்கு',
+    completion_rate: 'பூர்த்தி விகிதம்',
+    subject_stats: 'பாட புள்ளிவிவரங்கள்',
+    smart_insights: 'ஸ்மார்ட் நுண்ணறிவு 💡',
+    good_job: 'நன்று! இதைத் தொடருங்கள்.',
+    need_focus: 'இன்னும் கவனம் தேவை.',
+    study_more_msg: 'இந்த வாரம் உங்கள் இலக்கை விட குறைவாக படித்துள்ளீர்கள். இன்னும் கடினமாக உழைப்போம்!',
+    paper_focus_msg: 'சமீபத்தில் தியரியில் அதிக கவனம் செலுத்தினீர்கள். இப்போது சில தாள்களை முயற்சிப்போம்.',
+    keep_streak_msg: 'உங்கள் ஸ்ட்ரீக்கை பராமரிக்க முயற்சி செய்யுங்கள். அதிக XP ஈட்ட இதுவே சிறந்த வழி!'
   }
 };
 
@@ -282,7 +289,7 @@ function useLocalState(key, initial) {
 
   const lastKeyRef = React.useRef(key);
 
-  // When key changes, sync state from new key
+  // Sync when key changes
   React.useEffect(() => {
     if (lastKeyRef.current !== key) {
       try {
@@ -294,14 +301,38 @@ function useLocalState(key, initial) {
     }
   }, [key, initial]);
 
-  // When value changes, save to localStorage (only for the current key)
+  // Save to localStorage AND notify others in same window
   React.useEffect(() => {
     if (lastKeyRef.current === key) {
       try {
-        localStorage.setItem(key, JSON.stringify(value));
+        const currentRaw = localStorage.getItem(key);
+        const newRaw = JSON.stringify(value);
+        if (currentRaw !== newRaw) {
+          localStorage.setItem(key, newRaw);
+          window.dispatchEvent(new CustomEvent('stt-storage', { detail: { key, value } }));
+        }
       } catch (e) {}
     }
   }, [key, value]);
+
+  // Listen for storage events (other tabs) AND stt-storage (same tab)
+  React.useEffect(() => {
+    const handleSync = (e) => {
+      const eventKey = e.key || (e.detail && e.detail.key);
+      if (eventKey === key) {
+        try {
+          const newVal = e.detail ? e.detail.value : JSON.parse(e.newValue);
+          setValue(newVal);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('stt-storage', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('stt-storage', handleSync);
+    };
+  }, [key]);
   
   return [value, setValue];
 }
@@ -393,11 +424,55 @@ function useSttState() {
     setNotes(prev => ({ ...prev, [taskId]: text }));
   }, [setNotes]);
 
+  const playPopSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+  };
+
+  const playSuccessSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch(e) {}
+  };
+
   const bumpHour = React.useCallback((key, delta) => {
+    if (delta > 0) playPopSound();
     setHoursMap(prev => {
-      const weekH = prev[activeWeek] || { b1: 0, b2: 0, b3: 0 };
+      const weekH = prev[activeWeek] || { b1: 0, b2: 0, b3: 0, b4: 0 };
+      const currentTotal = (weekH.b1||0) + (weekH.b2||0) + (weekH.b3||0) + (weekH.b4||0);
       const newVal = Math.max(0, Math.min(99, (weekH[key] || 0) + delta));
-      return { ...prev, [activeWeek]: { ...weekH, [key]: newVal } };
+      const nextWeekH = { ...weekH, [key]: newVal };
+      const nextTotal = (nextWeekH.b1||0) + (nextWeekH.b2||0) + (nextWeekH.b3||0) + (nextWeekH.b4||0);
+      
+      if (delta > 0 && nextTotal > currentTotal && nextTotal > 0 && nextTotal % 7 === 0) {
+        setTimeout(() => {
+          playSuccessSound();
+          if (window.confetti) window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+        }, 50);
+      }
+      return { ...prev, [activeWeek]: nextWeekH };
     });
   }, [setHoursMap, activeWeek]);
 
@@ -437,43 +512,80 @@ function usePomodoro() {
   const [running, setRunning] = useLocalState('stt.timer.running', false);
   const [preset, setPreset] = useLocalState('stt.timer.preset', 25);
   const [isBreak, setIsBreak] = useLocalState('stt.timer.isBreak', false);
+  const [studyPreset, setStudyPreset] = useLocalState('stt.timer.studyPreset', 25);
   const tickRef = React.useRef();
+
+  const playBell = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+      osc.start(); osc.stop(ctx.currentTime + 1.2);
+    } catch(e) {}
+  };
+
+  const showNotif = (title, body) => {
+    try {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '🌳' });
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+    } catch(e) {}
+  };
 
   React.useEffect(() => {
     if (!running) return;
     tickRef.current = setInterval(() => {
       setSeconds(s => {
         if (s <= 1) {
-          setRunning(false);
-          // Switch mode
+          clearInterval(tickRef.current);
           const nextIsBreak = !isBreak;
           setIsBreak(nextIsBreak);
-          const nextMin = nextIsBreak ? 5 : 25;
-          setPreset(nextMin);
-          return nextMin * 60;
+          if (nextIsBreak) {
+            // Study done → auto 5min break
+            playBell();
+            showNotif('☕ Break Time!', 'හොඳ වැඩ! 5 minutes ක් Rest කරන්න.');
+            setPreset(5);
+            setRunning(true);
+            return 5 * 60;
+          } else {
+            // Break done → auto restart study
+            playBell();
+            showNotif('🌳 Focus Time!', 'Break ඉවරයි! නැවත පටන් ගනිමු.');
+            setPreset(studyPreset);
+            setRunning(true);
+            return studyPreset * 60;
+          }
         }
         return s - 1;
       });
     }, 1000);
     return () => clearInterval(tickRef.current);
-  }, [running, isBreak]);
+  }, [running, isBreak, studyPreset]);
 
   const start = () => { setRunning(true); };
   const pause = () => setRunning(false);
   const reset = () => { 
     setRunning(false); 
     setIsBreak(false);
-    setPreset(25);
-    setSeconds(25 * 60); 
+    setPreset(studyPreset);
+    setSeconds(studyPreset * 60); 
   };
   const setPresetMin = (m, breakMode = false) => { 
-    setPreset(m); 
+    setPreset(m);
+    if (!breakMode) setStudyPreset(m); // remember study preset
     setRunning(false); 
     setIsBreak(breakMode);
     setSeconds(m * 60); 
   };
 
-  return { seconds, running, start, pause, reset, setPresetMin, preset, isBreak, setSeconds };
+  return { seconds, running, start, pause, reset, setPresetMin, preset, isBreak, setSeconds, studyPreset };
 }
 
 function formatTime(sec) {

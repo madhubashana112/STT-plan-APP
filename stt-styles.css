@@ -21,6 +21,7 @@
 
 /* Anti-Blink Fix for Android WebViews */
 * {
+  box-sizing: border-box;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   -webkit-perspective: 1000;
