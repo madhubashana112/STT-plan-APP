@@ -1,9 +1,6 @@
-// 3-branch tree — Class/Study/Paper — each branch is a different color.
-// Each branch has 7 leaves (21 total); leaves light up based on branch progress ratio.
-
 const TreeSVG = ({ branches, progress, color, size = 200, glow = true, week = 1, theme = 'default', season = 'spring', flowers = false }) => {
   const treeId = React.useMemo(() => Math.random().toString(36).substr(2, 9), []);
-  // Fallback for single color/progress usage (backward compatibility)
+  
   let finalBranches = branches;
   if (!finalBranches && color) {
     const litCount = Math.floor((progress || 0) * 7);
@@ -17,139 +14,133 @@ const TreeSVG = ({ branches, progress, color, size = 200, glow = true, week = 1,
 
   if (!finalBranches || !Array.isArray(finalBranches)) return <div style={{width: size, height: size}} />;
   
-  let trunkColor = "#7c2d12"; // brown
-  if (theme === 'sakura') trunkColor = "#4a3030";
-  if (theme === 'magic') trunkColor = "#1e1b4b";
+  const weekInMonth = ((week - 1) % 4) + 1;
+  const trunkColor = "#5d2710";
+  const highlightColor = "#92400e";
 
-  // Season overrides for colors
   const getSeasonalColor = (baseColor, index) => {
     if (season === 'autumn') return ['#ea580c', '#f59e0b', '#dc2626', '#b45309'][index] || baseColor;
     if (season === 'winter') return ['#f1f5f9', '#94a3b8', '#38bdf8', '#0284c7'][index] || baseColor;
     if (season === 'summer') return ['#15803d', '#16a34a', '#22c55e', '#4ade80'][index] || baseColor;
-    // spring / default uses original branch colors
-    if (theme === 'sakura') return ['#fbcfe8', '#f472b6', '#be185d', '#831843'][index] || baseColor;
-    if (theme === 'magic') return ['#c084fc', '#a78bfa', '#818cf8', '#6366f1'][index] || baseColor;
     return baseColor;
   };
 
-  const branchLeaves = [
-    [{ cx: 10, cy: 98, r: 10 }, { cx: -3, cy: 96, r: 10 }, { cx: 18, cy: 87, r: 12 }, { cx: -15, cy: 85, r: 12 }, { cx: 12, cy: 75, r: 11 }, { cx: -8, cy: 73, r: 11 }, { cx: 2, cy: 65, r: 10 }],
-    [{ cx: 58, cy: 68, r: 10 }, { cx: 45, cy: 66, r: 10 }, { cx: 65, cy: 57, r: 12 }, { cx: 35, cy: 55, r: 12 }, { cx: 60, cy: 45, r: 11 }, { cx: 40, cy: 43, r: 11 }, { cx: 50, cy: 35, r: 10 }],
-    [{ cx: 132, cy: 66, r: 10 }, { cx: 145, cy: 68, r: 10 }, { cx: 125, cy: 55, r: 12 }, { cx: 155, cy: 57, r: 12 }, { cx: 130, cy: 43, r: 11 }, { cx: 150, cy: 45, r: 11 }, { cx: 140, cy: 35, r: 10 }],
-    [{ cx: 180, cy: 96, r: 10 }, { cx: 193, cy: 98, r: 10 }, { cx: 172, cy: 85, r: 12 }, { cx: 205, cy: 87, r: 12 }, { cx: 178, cy: 73, r: 11 }, { cx: 198, cy: 75, r: 11 }, { cx: 188, cy: 65, r: 10 }]
-  ];
+  // Dramatic growth parameters - Adjusted for larger week 1
+  const trunkWidth = 6 + (weekInMonth * 3.5); // 9.5 to 20
+  const treeScale = 0.65 + (weekInMonth * 0.1); // 0.75 to 1.05
+  const branchReach = [0.6, 0.75, 0.9, 1.0][weekInMonth - 1]; 
+  const foliageScale = 0.65 + (weekInMonth * 0.1); 
 
   const branchPaths = [
-    "M 95 160 Q 45 140 25 100 Q 15 80 2 65",
-    "M 95 160 Q 75 130 65 95 Q 55 65 50 35",
-    "M 95 160 Q 115 130 125 95 Q 135 65 140 35",
-    "M 95 160 Q 145 140 165 100 Q 175 80 188 65"
+    `M 100 160 Q ${100 - 45 * branchReach} ${160 - 20 * branchReach} ${100 - 90 * branchReach} ${160 - 90 * branchReach}`,
+    `M 100 160 Q ${100 - 20 * branchReach} ${160 - 40 * branchReach} ${100 - 35 * branchReach} ${160 - 120 * branchReach}`,
+    `M 100 160 Q ${100 + 20 * branchReach} ${160 - 40 * branchReach} ${100 + 35 * branchReach} ${160 - 120 * branchReach}`,
+    `M 100 160 Q ${100 + 45 * branchReach} ${160 - 20 * branchReach} ${100 + 90 * branchReach} ${160 - 90 * branchReach}`
   ];
 
-  const weekInMonth = ((week - 1) % 4) + 1;
-
-  const getSubBranches = () => {
-    const subs = [];
-    if (weekInMonth >= 2) { 
-      subs.push("M 20 105 Q 28 100 30 90"); 
-      subs.push("M 170 105 Q 162 100 160 90"); 
-    }
-    if (weekInMonth >= 3) { 
-      subs.push("M 15 80 Q 5 75 0 70"); 
-      subs.push("M 62 100 Q 50 90 48 80"); 
-      subs.push("M 128 100 Q 140 90 142 80"); 
-    }
-    if (weekInMonth >= 4) { 
-      subs.push("M 55 65 Q 65 55 68 45"); 
-      subs.push("M 135 65 Q 125 55 122 45"); 
-      subs.push("M 175 80 Q 185 75 190 70"); 
-    }
-    return subs;
-  };
-
-  const treeScale = [0.55, 0.7, 0.85, 1.0][weekInMonth - 1];
+  const foliageClusters = [
+    { cx: 100 - 90 * branchReach, cy: 160 - 90 * branchReach, r: 24 * foliageScale },
+    { cx: 100 - 35 * branchReach, cy: 160 - 120 * branchReach, r: 24 * foliageScale },
+    { cx: 100 + 35 * branchReach, cy: 160 - 120 * branchReach, r: 24 * foliageScale },
+    { cx: 100 + 90 * branchReach, cy: 160 - 90 * branchReach, r: 24 * foliageScale }
+  ];
 
   return (
-    <svg viewBox="0 0 190 190" width={size} height={size} style={{ overflow: 'visible' }}>
+    <svg viewBox="0 0 200 200" width={size} height={size} style={{ overflow: 'visible' }}>
       <style>{`
         @keyframes sttSway { 0%, 100% { transform: rotate(-0.5deg); } 50% { transform: rotate(0.5deg); } }
-        @keyframes sttLeafPulse { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.08); filter: brightness(1.3); } }
-        @keyframes sttFlowerPop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        .stt-tree-group { transform-origin: bottom center; animation: sttSway 4s ease-in-out infinite; }
-        .stt-leaf-lit { transform-origin: center; animation: sttLeafPulse 3s ease-in-out infinite; }
-        .stt-flower { transform-origin: center; animation: sttFlowerPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes sttLeafPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
+        .stt-tree-group { transform-origin: bottom center; animation: sttSway 5s ease-in-out infinite; }
+        .stt-foliage-lit { animation: sttLeafPulse 4s ease-in-out infinite; }
       `}</style>
+      
       <defs>
         {finalBranches.map((b, i) => {
           const mainColor = getSeasonalColor(b.color, i);
           const uid = mainColor.replace('#', '');
           return (
             <React.Fragment key={i}>
-              <radialGradient id={`leafGlow-${treeId}-${uid}`}>
-                <stop offset="0%" stopColor={mainColor} stopOpacity="0.6"/>
+              <radialGradient id={`foliageGlow-${treeId}-${uid}`}>
+                <stop offset="0%" stopColor={mainColor} stopOpacity="0.5"/>
                 <stop offset="100%" stopColor={mainColor} stopOpacity="0"/>
               </radialGradient>
-              <linearGradient id={`leafFill-${treeId}-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`foliageFill-${treeId}-${uid}`} x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor={mainColor}/>
-                <stop offset="100%" stopColor={mainColor} stopOpacity="0.5"/>
+                <stop offset="100%" stopColor={mainColor} stopOpacity="0.7"/>
               </linearGradient>
             </React.Fragment>
           );
         })}
+        <linearGradient id={`trunkGrad-${treeId}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#451a03"/>
+          <stop offset="50%" stopColor="#7c2d12"/>
+          <stop offset="100%" stopColor="#451a03"/>
+        </linearGradient>
       </defs>
 
-      <ellipse cx="95" cy="178" rx="50" ry="5" fill="#000" opacity="0.4" />
+      <ellipse cx="100" cy="192" rx={35 + weekInMonth * 10} ry="6" fill="#000" opacity="0.3" />
+      
+      {/* Roots - only show later weeks */}
+      <g opacity={weekInMonth > 2 ? 1 : 0} style={{ transition: 'opacity 1s' }}>
+        <ellipse cx="100" cy="188" rx={25 + weekInMonth * 6} ry="8" fill="#2d1a0a" />
+        <path d="M 80 188 Q 85 178 90 188 M 110 188 Q 115 178 120 188" stroke="#166534" strokeWidth="2" fill="none" />
+      </g>
 
-      <g className="stt-tree-group" style={{ transform: `scale(${treeScale})`, transformOrigin: '95px 180px', transition: 'transform 0.6s ease' }}>
-        {/* Trunk & Branches with dynamic thickness */}
-        <path d="M 95 180 L 95 160" stroke={trunkColor} strokeWidth={8 + weekInMonth * 1.5} strokeLinecap="round" fill="none"/>
+      <g className="stt-tree-group" style={{ transform: `scale(${treeScale})`, transformOrigin: '100px 190px', transition: 'all 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+        
+        {/* Trunk maturation: Majestic multi-strand base even from week 1 */}
+        <g>
+          <path d="M 94 190 Q 97 175 100 160" stroke={`url(#trunkGrad-${treeId})`} strokeWidth={trunkWidth} strokeLinecap="round" fill="none" />
+          <path d="M 106 190 Q 103 175 100 160" stroke={`url(#trunkGrad-${treeId})`} strokeWidth={trunkWidth} strokeLinecap="round" fill="none" />
+        </g>
+        
+        {/* Branches - split from a higher point for a clearer trunk */}
         {finalBranches.map((b, i) => (
-          <path key={i} d={branchPaths[i]} stroke={trunkColor} strokeWidth={5 + weekInMonth * 1.2} strokeLinecap="round" fill="none" opacity="0.95"/>
-        ))}
-        {getSubBranches().map((subPath, i) => (
-          <path key={`sub-${i}`} d={subPath} stroke={trunkColor} strokeWidth={3 + weekInMonth * 0.8} strokeLinecap="round" fill="none" opacity="0.95"/>
+          <g key={i}>
+            <path d={branchPaths[i]} stroke={`url(#trunkGrad-${treeId})`} strokeWidth={trunkWidth * 0.6} strokeLinecap="round" fill="none" opacity="0.98" style={{ transition: 'd 1s' }} />
+            <path d={branchPaths[i]} stroke={highlightColor} strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.2" strokeDasharray="4 8" />
+          </g>
         ))}
 
+        {/* Foliage Clusters */}
         {finalBranches.map((b, bi) => {
           const lit = b.currentHrs || 0;
+          const ratio = lit / 7;
           const mainColor = getSeasonalColor(b.color, bi);
           const uid = mainColor.replace('#', '');
-          const isFull = lit >= 7;
+          const cl = foliageClusters[bi];
 
-          return branchLeaves[bi].map((lf, li) => {
-            const isLit = li < lit;
-            const hasFlower = flowers && isFull && (li === 3 || li === 6); // Add flowers to full branches
-            
-            return (
-              <g key={`${bi}-${li}`} className={isLit ? 'stt-leaf-lit' : ''} style={{ transformOrigin: `${lf.cx}px ${lf.cy}px` }}>
-                {isLit && glow && (
-                  <circle cx={lf.cx} cy={lf.cy} r={lf.r * 1.6} fill={`url(#leafGlow-${treeId}-${uid})`} style={{ mixBlendMode: 'screen' }} />
-                )}
-                <circle
-                  cx={lf.cx} cy={lf.cy} r={lf.r}
-                  fill={isLit ? `url(#leafFill-${treeId}-${uid})` : 'rgba(255,255,255,0.03)'}
-                  stroke={isLit ? 'rgba(255,255,255,0.4)' : `rgba(255,255,255,0.15)`}
-                  strokeWidth={isLit ? 1.5 : 1}
-                  strokeDasharray={isLit ? 'none' : '3 3'}
-                  style={{
-                    transition: 'all 600ms',
-                    filter: isLit && glow ? `drop-shadow(0 0 5px ${mainColor})` : 'none',
-                    transformOrigin: `${lf.cx}px ${lf.cy}px`,
-                    transform: isLit ? 'scale(1)' : 'scale(0.85)',
-                  }}
-                />
-                {hasFlower && (
-                  <g className="stt-flower" style={{ transform: `translate(${lf.cx}px, ${lf.cy}px) translate(-6px, -12px)` }}>
-                    <path d="M6 2 Q8 0 10 2 Q12 4 10 6 Q8 8 6 6 Q4 4 6 2" fill="#fff" />
-                    <circle cx="6" cy="4" r="1.5" fill="#fcd34d" />
-                  </g>
-                )}
-                {isLit && (
-                  <ellipse cx={lf.cx - lf.r/2.5} cy={lf.cy - lf.r/2.5} rx={lf.r/2.5} ry={lf.r/4} fill="#fff" opacity="0.6" transform={`rotate(-30, ${lf.cx - lf.r/2.5}, ${lf.cy - lf.r/2.5})`} />
-                )}
-              </g>
-            );
-          });
+          return (
+            <g key={bi} className={ratio > 0 ? 'stt-foliage-lit' : ''} style={{ transformOrigin: `${cl.cx}px ${cl.cy}px`, transition: 'all 1s' }}>
+              {ratio > 0 && glow && (
+                <circle cx={cl.cx} cy={cl.cy} r={cl.r * (1.2 + ratio)} fill={`url(#foliageGlow-${treeId}-${uid})`} style={{ mixBlendMode: 'screen', transition: 'r 0.5s' }} />
+              )}
+              
+              {[...Array(7)].map((_, li) => {
+                const angle = (li / 7) * Math.PI * 2;
+                const dist = cl.r * 0.45;
+                const lcx = cl.cx + Math.cos(angle) * dist;
+                const lcy = cl.cy + Math.sin(angle) * dist;
+                const isLit = li < lit;
+                
+                return (
+                  <circle
+                    key={li}
+                    cx={lcx} cy={lcy} r={cl.r * 0.7}
+                    fill={isLit ? `url(#foliageFill-${treeId}-${uid})` : 'rgba(255,255,255,0.03)'}
+                    stroke={isLit ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}
+                    strokeWidth="1"
+                    style={{
+                      transition: 'all 800ms ease',
+                      filter: isLit ? `drop-shadow(0 0 8px ${mainColor}55)` : 'none',
+                      transform: isLit ? 'scale(1)' : 'scale(0.8)',
+                      transformOrigin: `${lcx}px ${lcy}px`
+                    }}
+                  />
+                );
+              })}
+            </g>
+          );
         })}
       </g>
     </svg>

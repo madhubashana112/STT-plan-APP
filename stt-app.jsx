@@ -107,7 +107,7 @@ const TodayLeafMap = ({ activeWeek, hours, t, lang, setInfoOpen, season, theme }
             { color: BRANCH_COLORS.b3, colorDark: BRANCH_DARK.b3, currentHrs: (hours || {}).b3, targetHrs: branchTarget },
             { color: BRANCH_COLORS.b4, colorDark: BRANCH_DARK.b4, currentHrs: (hours || {}).b4, targetHrs: branchTarget },
           ]}
-          size={240} glow={true} week={activeWeek}
+          size={Math.min(window.innerWidth * 0.65, 240)} glow={true} week={activeWeek}
           season={season} theme={theme}
         />
       </div>
@@ -212,31 +212,40 @@ const BranchCounters = ({ hours, week, t, bumpHour }) => {
   const weekTarget = week.targetHrs || 7;
   const branchTarget = Math.ceil(weekTarget / 4);
   const cards = [
-    { key: 'b1', label: 'Class / Rec', label2: 'නව කොටස', color: BRANCH_COLORS.b1 },
-    { key: 'b2', label: 'Study', label2: 'Active Recall', color: BRANCH_COLORS.b2 },
-    { key: 'b3', label: 'Practice', label2: 'ප්‍රශ්න කිරීම', color: BRANCH_COLORS.b3 },
-    { key: 'b4', label: 'Revision', label2: 'Spaced Rep', color: BRANCH_COLORS.b4 },
+    { key: 'b1', label: 'නව කොටසක් පාඩම් කිරීම', label2: 'කියවීම/Recording/class', color: BRANCH_COLORS.b1 },
+    { key: 'b2', label: 'පොත වසා කරුණු මතකයෙන් ආවර්ජනය කිරීම', label2: '(Active Recall)', color: BRANCH_COLORS.b2 },
+    { key: 'b3', label: 'එම කොටසට අදාළව ප්‍රශ්න කිරීම / බහුවරණ ගැටලු විසඳීම', label2: '(Practice Testing)', color: BRANCH_COLORS.b3 },
+    { key: 'b4', label: 'පෙර සතිවල ඉගෙන ගත් දේවල් නැවත මතක් කිරීම', label2: '(Spaced Repetition)', color: BRANCH_COLORS.b4 },
   ];
+  
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div className="stt-branch-grid">
       {cards.map(c => {
         const h = Number((hours || {})[c.key] || 0);
         const pct = Math.min(100, (h / branchTarget) * 100);
         return (
           <div key={c.key} style={{
-            flex: 1, background: 'linear-gradient(180deg, rgba(20,36,26,0.95), rgba(12,24,16,0.9))',
-            border: `1.5px solid ${c.color}55`, borderRadius: 14, padding: '10px 8px 8px',
+            background: 'linear-gradient(180deg, rgba(20,36,26,0.95), rgba(12,24,16,0.9))',
+            border: `1.5px solid ${c.color}55`, borderRadius: 14, padding: '10px 6px 8px',
             boxShadow: `0 2px 12px ${c.color}20, inset 0 1px 0 rgba(255,255,255,0.06)`,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden',
+            minHeight: 125
           }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, boxShadow: `0 0 8px ${c.color}` }} />
-            <div style={{ textAlign: 'center', fontSize: 10.5, color: '#ffffff', fontWeight: 600 }}><div>{c.label}</div><div>{c.label2}</div></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <button onClick={() => bumpHour(c.key, -1)} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-              <div style={{ fontSize: 18, fontWeight: 900, color: c.color, fontFamily: 'Inter', minWidth: 30, textAlign: 'center', textShadow: `0 0 8px ${c.color}80` }}>{h}h</div>
-              <button onClick={() => bumpHour(c.key, 1)} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, boxShadow: `0 0 8px ${c.color}`, marginBottom: 6 }} />
+            <div style={{ 
+              textAlign: 'center', fontSize: 10, color: '#ffffff', fontWeight: 600, lineHeight: 1.3,
+              flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 4px'
+            }}>
+              <div>{c.label}</div>
+              <div style={{ opacity: 0.7, fontSize: 8.5, marginTop: 3 }}>{c.label2}</div>
             </div>
-            <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginTop: 4, overflow: 'hidden' }}>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, marginTop: 8 }}>
+              <button onClick={() => bumpHour(c.key, -1)} style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>−</button>
+              <div style={{ fontSize: 18, fontWeight: 900, color: c.color, fontFamily: 'Inter', minWidth: 32, textAlign: 'center', textShadow: `0 0 8px ${c.color}80` }}>{h}h</div>
+              <button onClick={() => bumpHour(c.key, 1)} style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>+</button>
+            </div>
+            <div style={{ width: '90%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               <div style={{ width: `${pct}%`, height: '100%', background: c.color, boxShadow: `0 0 6px ${c.color}`, transition: 'width 400ms ease' }} />
             </div>
           </div>
@@ -274,8 +283,8 @@ const StudyAnalytics = ({ hours, summary, t, activeWeek = 1, hoursMap = {} }) =>
             {[
               { id: 'b1', label: t('class_short'), color: BRANCH_COLORS.b1, val: hours.b1 || 0 },
               { id: 'b2', label: t('study_short'), color: BRANCH_COLORS.b2, val: hours.b2 || 0 },
-              { id: 'b3', label: 'PRAC', color: BRANCH_COLORS.b3, val: hours.b3 || 0 },
-              { id: 'b4', label: 'REV', color: BRANCH_COLORS.b4, val: hours.b4 || 0 },
+              { id: 'b3', label: t('prac_short'), color: BRANCH_COLORS.b3, val: hours.b3 || 0 },
+              { id: 'b4', label: t('rev_short'), color: BRANCH_COLORS.b4, val: hours.b4 || 0 },
             ].map(b => (
               <div key={b.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                 <div style={{ fontSize: 12, color: '#fff', fontWeight: 900 }}>{b.val}h</div>
@@ -437,7 +446,7 @@ const LoginScreen = ({ onLogin }) => {
           )}
 
           <button onClick={() => {
-            if (!regName.trim() || !regGrade || !regTargetDate) {
+            if (!regName.trim() || !regGrade || !regTargetDate || !regStartDate) {
               setErrorMsg(t('fill_error'));
               return;
             }
@@ -446,8 +455,6 @@ const LoginScreen = ({ onLogin }) => {
             setSuperName(nameToSave);
             const newProfiles = [...new Set([...profiles, nameToSave])];
             setProfiles(newProfiles);
-            localStorage.setItem('stt.superName', JSON.stringify(nameToSave));
-            localStorage.setItem('stt.profiles', JSON.stringify(newProfiles));
             localStorage.setItem('stt.user_' + nameToSave, JSON.stringify({ grade: regGrade, targetDate: regTargetDate, startDate: regStartDate }));
             // Explicitly initialize new user data to 0
             localStorage.setItem('stt.streak_' + nameToSave, JSON.stringify({ count: 0, lastISO: null }));
@@ -455,7 +462,9 @@ const LoginScreen = ({ onLogin }) => {
             localStorage.setItem('stt.hoursMap_' + nameToSave, JSON.stringify({}));
 
             const startMonthNum = new Date(regStartDate).getMonth() + 1;
+            const startWeekNum = (startMonthNum - 1) * 4 + Math.min(4, Math.ceil(new Date(regStartDate).getDate() / 7));
             localStorage.setItem('stt.activeMonth', JSON.stringify(startMonthNum));
+            localStorage.setItem('stt.activeWeek_' + nameToSave, JSON.stringify(startWeekNum));
             localStorage.setItem('stt.justRegistered', 'true');
             onLogin();
           }} style={{
@@ -522,7 +531,7 @@ const LoginScreen = ({ onLogin }) => {
                           }
                         } catch (e) { }
                         localStorage.setItem('stt.activeMonth', JSON.stringify(startM));
-                        localStorage.setItem('stt.superName', JSON.stringify(p));
+                        setSuperName(p);
                         onLogin();
                       }} style={{
                         width: '100%', padding: 12, borderRadius: 16,
@@ -726,7 +735,7 @@ const LoginScreen = ({ onLogin }) => {
   );
 };
 
-const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
+const ForestView = ({ S, summary, t, streak, setBadgesOpen, setConfirmData }) => {
   const { data, hoursMap, treeTheme } = S;
   
 
@@ -763,7 +772,7 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
         position: 'absolute', inset: 0, zIndex: 3,
         overflowX: 'auto', overflowY: 'hidden',
         display: 'flex', alignItems: 'flex-end',
-        padding: '0 40px 80px', gap: 60,
+        padding: '0 60px 90px', gap: 120,
       }}>
         {activeTrees.map((w, i) => {
           const h = hoursMap[w.id] || { b1: 0, b2: 0, b3: 0, b4: 0 };
@@ -819,27 +828,35 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
 
       {/* Achievement Overlay - Stats Floating */}
       <div style={{
-        position: 'absolute', top: 20, left: 20, zIndex: 10,
-        display: 'flex', gap: 10
+        position: 'absolute', top: 20, left: 16, zIndex: 10,
+        display: 'flex', gap: 6
       }}>
-        <div style={{
+        <div onClick={() => setConfirmData({
+          title: '✨ Total XP (Experience Points)',
+          message: 'ඔබ පාඩම් කරන සෑම පැයකටම සහ සම්පූර්ණ කරන සෑම ඉලක්කයකටම XP හිමි වේ. වැඩිපුර XP එකතු කරගෙන ඔබේ Rank එක (Bronze → Silver → Gold → Diamond) වැඩිකරගන්න!',
+          confirmText: 'OK'
+        })} style={{
           background: 'rgba(5,10,6,0.8)', backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(74,222,128,0.2)', borderRadius: 14,
-          padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10
+          border: '1px solid rgba(74,222,128,0.2)', borderRadius: 12,
+          padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer'
         }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(74,222,128,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>✨</div>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(74,222,128,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>✨</div>
           <div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>TOTAL XP</div>
             <div style={{ fontSize: 14, fontWeight: 900, color: '#fff' }}>{summary.xp.toLocaleString()}</div>
             <div style={{ fontSize: 9, color: '#4ade80', fontWeight: 800, marginTop: 1 }}>{summary.xp >= 2000 ? '💎 DIAMOND' : summary.xp >= 1000 ? '🥇 GOLD' : summary.xp >= 500 ? '🥈 SILVER' : '🥉 BRONZE'}</div>
           </div>
         </div>
-        <div style={{
+        <div onClick={() => setConfirmData({
+          title: '🔥 Daily Streak',
+          message: 'ඔබ අඛණ්ඩව දිනපතා පාඩම් කරන දින ගණන මෙයින් පෙන්වයි. දවසක් හෝ මගහැරුණොත් Streak එක බිංදුවට (0) යයි. නොකඩවා පාඩම් කරලා ගිනිදැල්ල (🔥) ලබාගන්න!',
+          confirmText: 'OK'
+        })} style={{
           background: 'rgba(5,10,6,0.8)', backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(250,204,21,0.2)', borderRadius: 14,
-          padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10
+          border: '1px solid rgba(250,204,21,0.2)', borderRadius: 12,
+          padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer'
         }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(250,204,21,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{streak.count >= 3 ? '🔥' : '⚡'}</div>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(250,204,21,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{streak.count >= 3 ? '🔥' : '⚡'}</div>
           <div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>STREAK</div>
             <div style={{ fontSize: 14, fontWeight: 900, color: streak.count >= 3 ? '#f97316' : '#fff' }}>{streak.count} DAYS</div>
@@ -848,8 +865,8 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
       </div>
 
       <button onClick={() => setBadgesOpen(true)} style={{
-        position: 'absolute', top: 20, right: 20, zIndex: 10,
-        width: 40, height: 40, borderRadius: 12, 
+        position: 'absolute', top: 20, right: 16, zIndex: 10,
+        width: 36, height: 36, borderRadius: 10, 
         background: 'rgba(5,10,6,0.8)', backdropFilter: 'blur(10px)',
         border: '1px solid rgba(250,204,21,0.3)', color: '#facc15',
         fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
@@ -857,7 +874,7 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
 
       {/* Instructions / Tip */}
       <div style={{
-        position: 'absolute', bottom: 15, left: '50%', transform: 'translateX(-50%)',
+        position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)',
         zIndex: 10, fontSize: 10, color: 'rgba(255,255,255,0.3)',
         fontFamily: 'var(--stt-font-sinhala)', pointerEvents: 'none', textAlign: 'center', width: '100%'
       }}>
@@ -872,6 +889,7 @@ const ForestView = ({ S, summary, t, streak, setBadgesOpen }) => {
 const MainApp = ({ onLogout }) => {
   const { lang, setLang, t } = window.useLang();
   const S = useSttState();
+
   const { 
     data, done, streak, activeWeek, summary, hours, hoursMap, treeTheme,
     toggleDone, updateNote, bumpHour, addTask, removeTask, setActiveWeek 
@@ -891,15 +909,20 @@ const MainApp = ({ onLogout }) => {
 
   const savedUserStr = localStorage.getItem('stt.user_' + S.superName);
   let userGrade = data.student.grade;
-  let userStartMonth = 1;
-  let userStartWeek = 1;
+  let userStartMonth = new Date().getMonth() + 1;
+  let userStartWeek = (userStartMonth - 1) * 4 + Math.min(4, Math.ceil(new Date().getDate() / 7));
   if (savedUserStr) {
     try {
       const parsed = JSON.parse(savedUserStr);
       if (parsed.grade) userGrade = parsed.grade;
       if (parsed.startDate) {
-        userStartMonth = new Date(parsed.startDate).getMonth() + 1;
-        userStartWeek = (userStartMonth - 1) * 4 + 1;
+        const d = new Date(parsed.startDate);
+        if (!isNaN(d.getTime())) {
+          userStartMonth = d.getMonth() + 1;
+          let wom = Math.ceil(d.getDate() / 7);
+          if (wom > 4) wom = 4;
+          userStartWeek = (userStartMonth - 1) * 4 + wom;
+        }
       }
     } catch (e) { }
   }
@@ -931,6 +954,62 @@ const MainApp = ({ onLogout }) => {
     } catch (e) { }
   };
 
+  const [showBonus, setShowBonus] = React.useState(false);
+  const [dailyQuoteDate, setDailyQuoteDate] = useLocalState('stt.dailyQuoteDate_' + S.superName, '');
+  const [showDailyQuote, setShowDailyQuote] = React.useState(false);
+  const [unlockData, setUnlockData] = React.useState(null);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      setUnlockData(e.detail);
+      if (window.playSuccessSound) window.playSuccessSound();
+      if (window.confetti) {
+         window.confetti({ particleCount: 300, spread: 160, startVelocity: 40, origin: { y: 0.4 }, zIndex: 10000 });
+         setTimeout(() => window.confetti({ particleCount: 200, spread: 120, startVelocity: 30, origin: { y: 0.5 }, zIndex: 10000 }), 400);
+      }
+    };
+    window.addEventListener('stt-unlock', handler);
+    return () => window.removeEventListener('stt-unlock', handler);
+  }, []);
+
+  React.useEffect(() => {
+    const today = new Date().toDateString();
+    if (dailyQuoteDate !== today && data.quotes?.length > 0) {
+      const t = setTimeout(() => {
+        setShowDailyQuote(true);
+        setDailyQuoteDate(today);
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, [dailyQuoteDate, data.quotes, S.superName]);
+
+  React.useEffect(() => {
+    const handler = () => {
+      setShowBonus(true);
+      if (S.soundEnabled && window.getAudioCtx) {
+        try {
+          const ctx = window.getAudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+          osc.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 1);
+        } catch(e) {}
+      }
+      if (window.confetti) {
+        window.confetti({ particleCount: 300, spread: 150, origin: { y: 0.5 }, zIndex: 10000 });
+      }
+    };
+    window.addEventListener('stt-daily-bonus', handler);
+    return () => window.removeEventListener('stt-daily-bonus', handler);
+  }, [S.soundEnabled]);
+
   const subjById = Object.fromEntries(data.subjects.map(s => [s.id, s]));
   const week = data.weeks.find(w => w.id === activeWeek) || data.weeks[0];
   const stageName = getStageName(activeWeek, t);
@@ -938,6 +1017,7 @@ const MainApp = ({ onLogout }) => {
   const SettingsView = () => (
     <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ fontSize: 18, fontWeight: 900, color: '#4ade80', marginBottom: 8, fontFamily: 'var(--stt-font-sinhala)' }}>⚙️ {t('settings')}</div>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 16, border: '1px solid rgba(255,255,255,0.1)' }}>
         <button onClick={() => setAvatarOpen(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
           <UserAvatar photo={userPhoto} name={S.superName} size={64} />
@@ -955,6 +1035,21 @@ const MainApp = ({ onLogout }) => {
             <button key={l} onClick={() => setLang(l)} style={{ flex: 1, padding: '10px', borderRadius: 10, background: lang === l ? '#4ade80' : 'rgba(255,255,255,0.05)', color: lang === l ? '#0a0e0b' : '#fff', border: 'none', fontWeight: 800 }}>{l === 'si' ? 'සිංහල' : (l === 'ta' ? 'தமிழ்' : 'English')}</button>
           ))}
         </div>
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#86efac', marginBottom: 12 }}>{t('sound_settings')}</div>
+        <button onClick={() => S.setSoundEnabled(!S.soundEnabled)} style={{
+          width: '100%', padding: '12px', borderRadius: 12,
+          background: S.soundEnabled ? 'rgba(74,222,128,0.15)' : 'rgba(239,68,68,0.1)',
+          border: `1.5px solid ${S.soundEnabled ? 'rgba(74,222,128,0.4)' : 'rgba(239,68,68,0.3)'}`,
+          color: S.soundEnabled ? '#4ade80' : '#ef4444',
+          fontSize: 14, fontWeight: 800, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          transition: 'all 0.2s'
+        }}>
+          {S.soundEnabled ? t('sound_on') : t('sound_off')}
+        </button>
       </div>
 
 
@@ -1026,15 +1121,25 @@ const MainApp = ({ onLogout }) => {
         <button onClick={() => window.open('https://t.me/epaperesathkaraya', '_blank')} style={{
           width: '100%', padding: '14px', borderRadius: 99, background: '#229ED9', color: '#fff', border: 'none',
           fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          boxShadow: '0 4px 15px rgba(34,158,217,0.3)', cursor: 'pointer'
+          boxShadow: '0 4px 15px rgba(34,158,217,0.3)', cursor: 'pointer', marginBottom: 10
         }}>
           ✈️ Join Telegram Channel
         </button>
+        <button onClick={() => window.open('https://forms.gle/YQQm5oHM9MofUaZ19', '_blank')} style={{
+          width: '100%', padding: '14px', borderRadius: 99, background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+          color: '#fff', fontSize: 13, fontWeight: 800, border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          boxShadow: '0 4px 15px rgba(217,119,6,0.3)', cursor: 'pointer'
+        }}>
+          <span>✍️</span> App එක ගැන ඔයාගේ අදහස කියන්න
+        </button>
       </div>
+
+
 
       {/* Version */}
       <div style={{ textAlign: 'center', marginTop: 10, opacity: 0.38 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>STT PLAN v1.3.0</div>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>STT PLAN v1.2.1</div>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, marginTop: 3, fontFamily: 'monospace' }}>
           &lt; Solo Developer /... &gt;
         </div>
@@ -1211,21 +1316,21 @@ const MainApp = ({ onLogout }) => {
                   {t('no_tasks_msg')}
                 </div>
               )}
-              {week.tasks.map(t => (
+              {week.tasks.map(task => (
                 <STT_TASKS.TaskRow
-                  key={t.id}
-                  task={t}
-                  done={!!done[t.id]}
-                  note={S.notes[t.id]}
-                  subject={subjById[t.subject] || { color: '#888', label: t.subject }}
-                  onToggle={() => toggleDone(t.id)}
-                  onNote={(text) => S.updateNote(t.id, text)}
-                  onTimer={() => setActiveTimerTask(t)}
+                  key={task.id}
+                  task={task}
+                  done={!!done[task.id]}
+                  note={S.notes[task.id]}
+                  subject={subjById[task.subject] || { color: '#888', label: task.subject }}
+                  onToggle={() => toggleDone(task.id)}
+                  onNote={(text) => S.updateNote(task.id, text)}
+                  onTimer={() => setActiveTimerTask(task)}
                   onRemove={() => {
                     setConfirmData({
                       title: t('del_task_title'),
-                      message: `"${t.title}" ${t('del_task_msg')}`,
-                      onConfirm: () => S.removeTask(week.id, t.id)
+                      message: `"${task.title}" ${t('del_task_msg')}`,
+                      onConfirm: () => S.removeTask(week.id, task.id)
                     });
                   }}
                 />
@@ -1282,7 +1387,7 @@ const MainApp = ({ onLogout }) => {
         )}
 
         {tab === 'grow' && (
-          <ForestView S={S} summary={summary} t={t} streak={streak} setBadgesOpen={setBadgesOpen} />
+          <ForestView S={S} summary={summary} t={t} streak={streak} setBadgesOpen={setBadgesOpen} setConfirmData={setConfirmData} />
         )}
 
         {tab === 'settings' && <SettingsView />}
@@ -1393,29 +1498,41 @@ const MainApp = ({ onLogout }) => {
                 </p>
               </section>
 
-              {/* 3. XP System */}
-              <section>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>03. XP සහ දක්ෂතා (Gamification)</div>
-                <ul style={{ paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {/* 3. XP සහ දක්ෂතා (Gamification) */}
+              <section style={{ background: 'rgba(250,204,21,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(250,204,21,0.1)' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#fde047', marginBottom: 6 }}>03. XP සහ දක්ෂතා (Gamification)</div>
+                <ul style={{ paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>සෑම පාඩම් පැයකටම <span style={{ color: '#4ade80', fontWeight: 700 }}>10 XP</span> බැගින් ලැබේ.</li>
-                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>Task එකක් අවසන් කළ විට සහ දිගටම පාඩම් කරන විට (Streak) අමතර ලකුණු ලැබේ.</li>
-                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>XP සියල්ල මුළු මාසයටම අදාළව (Monthly cumulative) ගණනය වේ.</li>
+                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>ඉලක්ක සපුරන විට <span style={{ color: '#fff' }}>Confetti</span> සහ <span style={{ color: '#fff' }}>Sound Effects</span> මගින් ඔබව දිරිමත් කරයි.</li>
+                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>වැඩ අවසන් කරන විට <span style={{ color: '#fb923c' }}>Rank Badges</span> ලබා ගත හැක (Bronze → Silver → Diamond → A9).</li>
+                  <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>දිනපතා ඇප් එක භාවිතා කර <span style={{ color: '#f87171' }}>Fire Streak</span> එක පවත්වා ගන්න.</li>
                 </ul>
               </section>
 
-              {/* 4. Timer & Focus */}
-              <section style={{ background: 'rgba(56,189,248,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(56,189,248,0.1)' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8', marginBottom: 6 }}>04. Pomodoro ටයිමරය</div>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, margin: 0 }}>
-                  අවධානය වැඩි කරගැනීමට ටයිමරය භාවිතා කරන්න. විනාඩි 25ක් පාඩම් කර විනාඩි 5ක විවේකයක් ගැනීම ඔබේ මතක ශක්තිය වැඩි කිරීමට උපකාරී වේ.
-                </p>
+              {/* 4. Smart Insights & Unlock */}
+              <section>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 10 }}>04. ස්මාර්ට් ලුහුබැඳීම (Smart Features)</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <span style={{ fontSize: 14 }}>🔓</span>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
+                      <strong style={{ color: '#fff' }}>Dynamic Unlock:</strong> සතිපතා අවම පැය 7ක ඉලක්කය සපුරන විට ඊළඟ සතිය සහ මාසය ස්වයංක්‍රීයව අගුළු හැරේ (Unlock).
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <span style={{ fontSize: 14 }}>💡</span>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
+                      <strong style={{ color: '#fff' }}>Smart Insights:</strong> ඔබේ පාඩම් රටාව අනුව ඇප් එක විසින් ඔබට අවශ්‍ය උපදෙස් (Focus more, Good job) ලබා දෙයි.
+                    </div>
+                  </div>
+                </div>
               </section>
 
-              {/* 5. Custom Tasks */}
-              <section>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 }}>05. තමන්ගේම Tasks එකතු කිරීම</div>
+              {/* 5. Timer & Custom Tasks */}
+              <section style={{ background: 'rgba(56,189,248,0.05)', padding: 12, borderRadius: 14, border: '1px solid rgba(56,189,248,0.1)' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8', marginBottom: 6 }}>05. ටයිමරය සහ Tasks</div>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, margin: 0 }}>
-                  පහළ ඇති <span style={{ color: '#4ade80' }}>"+"</span> බොත්තමෙන් ඔයාගේ පෞද්ගලික වැඩ එකතු කරන්න. මෙහිදී O/L විෂයන් 9 ම තෝරාගැනීමට අවස්ථාව ඇත.
+                  අවධානය වැඩි කරගැනීමට <span style={{ color: '#fff', fontWeight: 700 }}>Pomodoro ටයිමරය</span> භාවිතා කරන්න. තවද, පහළ ඇති <span style={{ color: '#4ade80' }}>"+"</span> බොත්තමෙන් ඕනෑම විෂයකට අදාළව ඔබේම Tasks ඇතුළත් කර කාලය කළමනාකරණය කරගන්න.
                 </p>
               </section>
 
@@ -1538,6 +1655,113 @@ const MainApp = ({ onLogout }) => {
         confirmText={confirmData?.confirmText}
         confirmColor={confirmData?.confirmColor}
       />
+
+      {showBonus && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(5,10,6,0.92)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(10px)', animation: 'sttFadeIn 0.3s ease-out'
+        }}>
+          <div style={{
+            fontSize: 100, animation: 'sttPopIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>🎁</div>
+          <div style={{
+            fontFamily: 'Archivo Black', fontSize: 28, color: '#facc15', marginTop: 20,
+            textShadow: '0 0 20px rgba(250,204,21,0.5)', animation: 'sttFadeIn 0.8s ease-out 0.2s both'
+          }}>
+            DAILY BONUS!
+          </div>
+          <div style={{
+            fontFamily: 'var(--stt-font-sinhala)', fontSize: 16, color: '#fff', marginTop: 10,
+            fontWeight: 700, animation: 'sttFadeIn 0.8s ease-out 0.4s both', textAlign: 'center'
+          }}>
+            දවසේ පළමු වැඩේට<br/>
+            <span style={{ fontSize: 24, color: '#4ade80', fontWeight: 900 }}>+30 XP</span>
+          </div>
+          <button onClick={() => setShowBonus(false)} style={{
+            marginTop: 40, padding: '14px 40px', borderRadius: 99, background: 'linear-gradient(135deg, #facc15, #eab308)',
+            color: '#000', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer',
+            boxShadow: '0 10px 25px rgba(250,204,21,0.4)', animation: 'sttFadeIn 0.8s ease-out 0.6s both'
+          }}>
+            Awesome! 🚀
+          </button>
+        </div>
+      )}
+
+      {showDailyQuote && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(5,10,6,0.85)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(10px)', animation: 'sttFadeIn 0.3s ease-out', padding: 20
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, rgba(20,30,22,0.9), rgba(10,15,10,0.95))',
+            border: '1px solid rgba(74,222,128,0.3)',
+            borderRadius: 24, padding: '40px 30px', maxWidth: 400, width: '100%',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,222,128,0.1) inset',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+            animation: 'sttPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}>
+            <div style={{ fontSize: 50, marginBottom: 20, filter: 'drop-shadow(0 0 10px rgba(250,204,21,0.5))' }}>💡</div>
+            <div style={{
+              fontFamily: 'var(--stt-font-sinhala)', fontSize: 18, color: '#e2e8f0',
+              lineHeight: 1.6, fontWeight: 500, marginBottom: 30
+            }}>
+              {randomQuote}
+            </div>
+            <button onClick={() => setShowDailyQuote(false)} style={{
+              padding: '14px 40px', borderRadius: 99, background: 'linear-gradient(135deg, #4ade80, #16a34a)',
+              color: '#000', fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer',
+              boxShadow: '0 10px 25px rgba(74,222,128,0.3)', transition: 'transform 0.2s'
+            }}
+            onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
+            onMouseOut={e => e.target.style.transform = 'scale(1)'}>
+              අද වැඩ පටන් ගමු! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+
+      {unlockData && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(5,10,6,0.92)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(12px)', animation: 'sttFadeIn 0.4s ease-out', padding: 20
+        }}>
+          <div style={{
+            fontSize: 120, animation: 'sttPopIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            filter: 'drop-shadow(0 0 30px rgba(74,222,128,0.5))'
+          }}>
+            {unlockData.type === 'month' ? '🏆' : '🔥'}
+          </div>
+          <div style={{
+            fontFamily: 'Archivo Black', fontSize: 36, color: '#4ade80', marginTop: 20,
+            textShadow: '0 0 20px rgba(74,222,128,0.5)', animation: 'sttFadeIn 0.8s ease-out 0.2s both',
+            textAlign: 'center'
+          }}>
+            {unlockData.type === 'month' ? 'MONTH UNLOCKED!' : 'WEEK UNLOCKED!'}
+          </div>
+          <div style={{
+            fontFamily: 'var(--stt-font-sinhala)', fontSize: 18, color: '#fff', marginTop: 15,
+            fontWeight: 700, animation: 'sttFadeIn 0.8s ease-out 0.4s both', textAlign: 'center',
+            lineHeight: 1.5
+          }}>
+            {unlockData.type === 'month' 
+              ? `නියමයි! ඔයා ${unlockData.id} වෙනි මාසය අන්ලොක් කළා.\nදිගටම මේ ගැම්ම තියාගමු! 💪`
+              : `සුපිරි! ඔයා ${unlockData.id} වෙනි සතිය අන්ලොක් කළා.\nතවත් පියවරක් ඉදිරියට! 🚀`}
+          </div>
+          <button onClick={() => setUnlockData(null)} style={{
+            marginTop: 40, padding: '16px 50px', borderRadius: 99, background: 'linear-gradient(135deg, #4ade80, #16a34a)',
+            color: '#000', fontSize: 18, fontWeight: 900, border: 'none', cursor: 'pointer',
+            boxShadow: '0 10px 25px rgba(74,222,128,0.4)', animation: 'sttFadeIn 0.8s ease-out 0.6s both',
+            transition: 'transform 0.2s'
+          }}
+          onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
+          onMouseOut={e => e.target.style.transform = 'scale(1)'}>
+            නියමයි!
+          </button>
+        </div>
+      )}
     </div>
   );
 };

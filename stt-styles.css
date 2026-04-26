@@ -89,20 +89,64 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   animation: sttConfettiFall linear forwards;
 }
 
-/* Scrollbars - Hidden but functional */
-.stt-scroll {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  -webkit-overflow-scrolling: touch; /* Momentum scrolling for mobile */
-}
-.stt-scroll::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-  background: transparent;
+/* Native App Feel */
+button, [role="button"], a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
+/* Scrollbars - Hidden but functional */
+.stt-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; /* Momentum scrolling */
+  overflow-y: auto;
+}
+.stt-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive Scaling for Small Androids */
+@media screen and (max-width: 360px) {
+  :root {
+    font-size: 14px;
+  }
+  .stt-nav-btn span {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* Smooth Transitions for Layout Changes */
+* {
+  transition: background-color 0.3s, border-color 0.3s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
 @keyframes sttShine {
   0% { transform: skewX(-20deg) translateX(-150%); }
   50%, 100% { transform: skewX(-20deg) translateX(250%); }
+}
+
+@keyframes sttPotatoShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-5deg) scale(1.02); }
+  75% { transform: rotate(5deg) scale(0.98); }
+}
+
+@keyframes sttBrainPop {
+  0% { transform: scale(0.5) rotate(-20deg); filter: hue-rotate(90deg); }
+  50% { transform: scale(1.5) rotate(10deg); filter: hue-rotate(-90deg); }
+  100% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg); }
+}
+
+/* Responsive Branch Grid */
+.stt-branch-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media screen and (min-width: 600px) {
+  .stt-branch-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

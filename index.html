@@ -2,21 +2,31 @@
 <html lang="si">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>CK Sir STT Plan App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Sinhala:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <link rel="stylesheet" href="stt-styles.css?v=130">
+  <link rel="stylesheet" href="stt-styles.css?v=131">
   <style>
-    html, body, #root { height: 100%; margin: 0; }
+    html, body, #root { height: 100%; margin: 0; padding: 0; }
     body {
-      overscroll-behavior: none;
+      overscroll-behavior-y: contain;
       background: #050a06;
       min-height: 100vh;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    /* Android Safe Area handling */
+    #root {
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
     }
   </style>
 </head>
@@ -38,12 +48,12 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-  <script src="stt-data.js?v=130"></script>
-  <script type="text/babel" src="stt-tree.jsx?v=130"></script>
-  <script type="text/babel" src="stt-hooks.jsx?v=130"></script>
-  <script type="text/babel" src="stt-ui.jsx?v=130"></script>
-  <script type="text/babel" src="stt-tasks.jsx?v=130"></script>
-  <script type="text/babel" src="stt-app.jsx?v=130"></script>
+  <script src="stt-data.js?v=131"></script>
+  <script type="text/babel" src="stt-tree.jsx?v=131"></script>
+  <script type="text/babel" src="stt-hooks.jsx?v=131"></script>
+  <script type="text/babel" src="stt-ui.jsx?v=131"></script>
+  <script type="text/babel" src="stt-tasks.jsx?v=131"></script>
+  <script type="text/babel" src="stt-app.jsx?v=131"></script>
 
   <script type="text/babel" data-presets="react">
     ReactDOM.createRoot(document.getElementById('root')).render(<SttApp/>);

@@ -125,7 +125,6 @@ const PomodoroModal = ({ open, onClose, task }) => {
   return (
     <div onClick={onClose} style={modalBg()}>
       <div onClick={e => e.stopPropagation()} style={{ ...modalCard(), position: 'relative' }}>
-        <audio ref={audioRef} src="https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2443.mp3" loop />
         
         {/* In-app Custom Time Popup */}
         {customOpen && (
@@ -180,26 +179,50 @@ const PomodoroModal = ({ open, onClose, task }) => {
               <stop offset="100%" stopColor="#fcd34d"/>
             </linearGradient>
           </defs>
-          <text x="100" y="105" textAnchor="middle" fill="#ecfdf5" fontSize="32" fontWeight="900" fontFamily="Inter">
+          <text x="100" y="70" textAnchor="middle" fontSize="42" style={{
+            animation: isBreak ? 'sttBrainPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' : (running ? 'sttPotatoShake 2s infinite ease-in-out' : 'none'),
+            transformOrigin: '100px 60px'
+          }}>
+            {isBreak ? '🧠' : '🥔'}
+          </text>
+          <text x="100" y="115" textAnchor="middle" fill="#ecfdf5" fontSize="28" fontWeight="900" fontFamily="Inter" style={{ transition: 'none' }}>
             {formatTime(seconds)}
           </text>
-          <text x="100" y="128" textAnchor="middle" fill={isBreak ? '#38bdf8' : '#86efac'} fontSize="11" fontWeight="700">
+          <text x="100" y="135" textAnchor="middle" fill={isBreak ? '#38bdf8' : '#86efac'} fontSize="11" fontWeight="700">
             {running ? (isBreak ? 'resting...' : 'focusing...') : 'paused'}
           </text>
         </svg>
 
+        {/* Study time presets */}
         <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
           {[15, 25, 45, 60].map(m => (
-            <button key={m} onClick={() => setPresetMin(m)} style={{
+            <button key={m} onClick={() => setPresetMin(m, false)} style={{
               width: 38, height: 32, borderRadius: 8, fontSize: 11, fontWeight: 800,
-              background: preset === m ? (isBreak ? '#38bdf8' : '#4ade80') : 'rgba(255,255,255,0.08)',
-              color: preset === m ? '#0a0e0b' : '#fff', border: 'none', transition: 'all 0.2s'
+              background: preset === m && !isBreak ? '#4ade80' : 'rgba(255,255,255,0.08)',
+              color: preset === m && !isBreak ? '#0a0e0b' : '#fff', border: 'none', transition: 'all 0.2s'
             }}>{m}m</button>
           ))}
           <button onClick={() => setCustomOpen(true)} style={{
             padding: '0 10px', height: 32, borderRadius: 8, fontSize: 11, fontWeight: 800,
             background: 'rgba(255,255,255,0.12)', color: '#fff', border: 'none'
           }}>Custom</button>
+        </div>
+
+        {/* Break button */}
+        <div style={{ margin: '10px 0 0', display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={() => { setPresetMin(5, true); start(); }}
+            style={{
+              width: '100%', height: 36, borderRadius: 10, fontSize: 12, fontWeight: 800,
+              background: isBreak ? '#38bdf8' : 'rgba(56,189,248,0.15)',
+              color: isBreak ? '#0a0e0b' : '#38bdf8',
+              border: `1.5px solid ${isBreak ? '#38bdf8' : 'rgba(56,189,248,0.4)'}`,
+              transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              boxShadow: isBreak ? '0 0 12px rgba(56,189,248,0.5)' : 'none'
+            }}
+          >
+            ☕ 5min Break
+          </button>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'center' }}>
@@ -286,15 +309,15 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>Task එකේ නම (උදා: Bio Past Paper)</label>
+            <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>Task එකේ නම (උදා: Science Past Paper)</label>
             <input autoFocus value={title} onChange={e => setTitle(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>විෂය (Subject)</label>
             <select value={subject} onChange={e => setSubject(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             >
               <option value="sci">විද්‍යාව (Science)</option>
               <option value="math">ගණිතය (Maths)</option>
@@ -310,13 +333,13 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>විස්තරයක් (අත්‍යවශ්‍ය නැත)</label>
             <textarea value={detail} onChange={e => setDetail(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 12, minHeight: 60, resize: 'vertical', outline: 'none', fontFamily: 'var(--stt-font-sinhala)' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 12, minHeight: 80, resize: 'none', outline: 'none', fontFamily: 'var(--stt-font-sinhala)', boxSizing: 'border-box' }}
             />
           </div>
           <div>
             <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>ගතවන කාලය (විනාඩි)</label>
             <input type="number" value={minutes} onChange={e => setMinutes(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
           <button type="submit" disabled={!title.trim()} style={{ ...primaryBtn(), marginTop: 8, opacity: title.trim() ? 1 : 0.5, fontFamily: 'var(--stt-font-sinhala)' }}>
@@ -331,16 +354,17 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
 
 // Common modal styles
 const modalBg = () => ({
-  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)',
+  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  zIndex: 100, padding: 16, animation: 'sttFadeIn .2s',
-  backdropFilter: 'blur(8px)',
+  zIndex: 100, padding: 16,
 });
 const modalCard = () => ({
   background: 'linear-gradient(180deg, #0f1f14, #050a06)',
-  borderRadius: 16, padding: 16, width: '100%', maxWidth: 320,
-  border: '1px solid rgba(74,222,128,0.25)',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(74,222,128,0.1)',
+  borderRadius: 24, padding: 20, width: '100%', maxWidth: 340,
+  border: '1.5px solid rgba(74,222,128,0.35)',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(74,222,128,0.1)',
+  boxSizing: 'border-box',
+  position: 'relative'
 });
 const closeBtn = () => ({
   width: 24, height: 24, borderRadius: 6,

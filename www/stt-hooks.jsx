@@ -3,6 +3,77 @@
 // NOTE: Uses React.useState / React.useEffect etc. directly to avoid
 // top-level name collisions across <script type="text/babel"> files.
 
+// Shared AudioContext for reliability on mobile/Android
+let _stt_audio_ctx = null;
+const getAudioCtx = () => {
+  if (!_stt_audio_ctx) {
+    _stt_audio_ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_stt_audio_ctx.state === 'suspended') {
+    _stt_audio_ctx.resume();
+  }
+  return _stt_audio_ctx;
+};
+
+const isSoundEnabled = () => {
+  try {
+    const raw = localStorage.getItem('stt.soundEnabled');
+    return raw === null || JSON.parse(raw) !== false;
+  } catch (e) { return true; }
+};
+
+const playCoinSound = () => {
+  if (!isSoundEnabled()) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+    osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+};
+
+const playPopSound = () => {
+  if (!isSoundEnabled()) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
+};
+
+const playSuccessSound = () => {
+  if (!isSoundEnabled()) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+};
+
 window.DICT = {
   si: {
     login: 'පිවිසෙන්න 👋',
@@ -75,7 +146,8 @@ window.DICT = {
     study_analytics: 'අධ්‍යයන ප්‍රස්ථාරය (Analytics)',
     class_short: 'Class',
     study_short: 'Study',
-    paper_short: 'Paper',
+    prac_short: 'Practice',
+    rev_short: 'Revision',
     tasks: 'TASKS',
     no_tasks_msg: 'තාමත් Tasks මුකුත් නෑ. පහළ තියෙන බොත්තම ඔබලා අලුත් Task එකක් හදන්න.',
     add_new_task: '+ අලුත් Task එකක් එකතු කරන්න',
@@ -92,7 +164,10 @@ window.DICT = {
     need_focus: 'තව ටිකක් උනන්දු වෙමු.',
     study_more_msg: 'ඔබ මේ සතියේ ඉලක්කයට වඩා අඩුවෙන් පාඩම් කරලා තියෙන්නේ. තව ටිකක් මහන්සි වෙමු!',
     paper_focus_msg: 'පහුගිය කාලේ වැඩියෙන්ම කළේ Theory. දැන් Papers වලටත් ටිකක් අවධානය දෙමු.',
-    keep_streak_msg: 'ඔබේ Streak එක දිගටම තියාගන්න උත්සාහ කරන්න. ලකුණු වැඩි කරගන්න හොඳම ක්‍රමය ඒකයි.'
+    keep_streak_msg: 'ඔබේ Streak එක දිගටම තියාගන්න උත්සාහ කරන්න. ලකුණු වැඩි කරගන්න හොඳම ක්‍රමය ඒකයි.',
+    sound_settings: 'ශබ්ද සැකසුම්',
+    sound_on: 'සක්‍රියයි 🔊',
+    sound_off: 'අක්‍රියයි 🔇',
   },
   en: {
     login: 'Login 👋',
@@ -148,6 +223,9 @@ window.DICT = {
     go_home: 'Go to Home',
     my_profile: 'My Profile',
     logout_confirm_msg: 'Are you sure you want to logout from this account?',
+    sound_settings: 'Sound Settings',
+    sound_on: 'Sound ON 🔊',
+    sound_off: 'Sound OFF 🔇',
     yes_logout: 'Yes, Logout',
     no: 'No',
     ok: 'OK',
@@ -164,7 +242,8 @@ window.DICT = {
     study_analytics: 'Study Analytics',
     class_short: 'Class',
     study_short: 'Study',
-    paper_short: 'Paper',
+    prac_short: 'Practice',
+    rev_short: 'Revision',
     tasks: 'TASKS',
     no_tasks_msg: 'No tasks yet. Tap the button below to add your first task.',
     add_new_task: '+ Add New Task',
@@ -253,7 +332,8 @@ window.DICT = {
     study_analytics: 'ஆய்வு பகுப்பாய்வு',
     class_short: 'வகுப்பு',
     study_short: 'படிப்பு',
-    paper_short: 'தாள்',
+    prac_short: 'பயிற்சி',
+    rev_short: 'மீளாய்வு',
     tasks: 'பணிகள்',
     no_tasks_msg: 'இன்னும் பணிகள் இல்லை. உங்கள் முதல் பணியைச் சேர்க்க கீழே உள்ள பொத்தானைத் தட்டவும்.',
     add_new_task: '+ புதிய பணியைச் சேர்',
@@ -282,7 +362,14 @@ function useLocalState(key, initial) {
   const [value, setValue] = React.useState(() => {
     try {
       const raw = localStorage.getItem(key);
-      if (raw !== null) return JSON.parse(raw);
+      if (raw !== null) {
+        try {
+          return JSON.parse(raw);
+        } catch(err) {
+          // Fallback if raw is not valid JSON (e.g. missing quotes)
+          return raw;
+        }
+      }
     } catch (e) {}
     return typeof initial === 'function' ? initial() : initial;
   });
@@ -294,25 +381,32 @@ function useLocalState(key, initial) {
     if (lastKeyRef.current !== key) {
       try {
         const raw = localStorage.getItem(key);
-        const newVal = raw !== null ? JSON.parse(raw) : (typeof initial === 'function' ? initial() : initial);
+        let newVal = typeof initial === 'function' ? initial() : initial;
+        if (raw !== null) {
+          try {
+            newVal = JSON.parse(raw);
+          } catch(err) {
+            newVal = raw;
+          }
+        }
         setValue(newVal);
       } catch (e) {}
       lastKeyRef.current = key;
     }
   }, [key, initial]);
 
-  // Save to localStorage AND notify others in same window
-  React.useEffect(() => {
-    if (lastKeyRef.current === key) {
-      try {
-        const currentRaw = localStorage.getItem(key);
-        const newRaw = JSON.stringify(value);
-        if (currentRaw !== newRaw) {
-          localStorage.setItem(key, newRaw);
-          window.dispatchEvent(new CustomEvent('stt-storage', { detail: { key, value } }));
-        }
-      } catch (e) {}
-    }
+  const setLocalValue = React.useCallback((newVal) => {
+    // Determine the next value synchronously
+    const v = typeof newVal === 'function' ? newVal(value) : newVal;
+    try {
+      const newRaw = JSON.stringify(v);
+      if (localStorage.getItem(key) !== newRaw) {
+        localStorage.setItem(key, newRaw);
+        window.dispatchEvent(new CustomEvent('stt-storage', { detail: { key, value: v } }));
+      }
+    } catch (e) {}
+    // Then update React state
+    setValue(v);
   }, [key, value]);
 
   // Listen for storage events (other tabs) AND stt-storage (same tab)
@@ -321,7 +415,16 @@ function useLocalState(key, initial) {
       const eventKey = e.key || (e.detail && e.detail.key);
       if (eventKey === key) {
         try {
-          const newVal = e.detail ? e.detail.value : JSON.parse(e.newValue);
+          let newVal;
+          if (e.detail && 'value' in e.detail) {
+            newVal = e.detail.value;
+          } else {
+            try {
+              newVal = JSON.parse(e.newValue);
+            } catch(err) {
+              newVal = e.newValue;
+            }
+          }
           setValue(newVal);
         } catch (err) {}
       }
@@ -334,13 +437,13 @@ function useLocalState(key, initial) {
     };
   }, [key]);
   
-  return [value, setValue];
+  return [value, setLocalValue];
 }
 
-function summarize(doneMap, allTasks, hoursMap, streak) {
+function summarize(doneMap, allTasks, hoursMap, streak, dailyBonuses) {
   const doneCount = allTasks.filter(t => doneMap[t.id]).length;
   const allHours = Object.values(hoursMap || {}).reduce((sum, h) => {
-    return sum + (h.b1 || 0) + (h.b2 || 0) + (h.b3 || 0);
+    return sum + (h.b1 || 0) + (h.b2 || 0) + (h.b3 || 0) + (h.b4 || 0);
   }, 0);
 
   // Weekly activity (last 7 days)
@@ -360,11 +463,13 @@ function summarize(doneMap, allTasks, hoursMap, streak) {
     return { ...s, total, completed, percent: total ? Math.round((completed / total) * 100) : 0 };
   }).filter(s => s.total > 0 || s.completed > 0);
 
+  const bonusCount = Object.keys(dailyBonuses || {}).length;
+
   return {
     doneCount,
     totalCount: allTasks.length,
     percent: allTasks.length ? Math.round((doneCount / allTasks.length) * 100) : 0,
-    xp: doneCount * 105 + (streak?.count || 0) * 15 + allHours * 10,
+    xp: doneCount * 105 + (streak?.count || 0) * 15 + allHours * 10 + bonusCount * 30,
     weekActivity,
     subjectStats
   };
@@ -372,7 +477,19 @@ function summarize(doneMap, allTasks, hoursMap, streak) {
 
 function useSttState() {
   const [superName, setSuperName] = useLocalState('stt.superName', '');
-  const pfx = superName ? `_${superName}` : '';
+  
+  // Force fallback to localStorage if state is empty (due to race conditions)
+  let actualName = superName;
+  if (!actualName) {
+    try {
+      const raw = localStorage.getItem('stt.superName');
+      if (raw) {
+        try { actualName = JSON.parse(raw); } catch(e) { actualName = raw; }
+      }
+    } catch(e) {}
+  }
+  
+  const pfx = actualName ? `_${actualName}` : '';
 
   const [customTasks, setCustomTasks] = useLocalState('stt.customTasks' + pfx, {});
 
@@ -396,19 +513,33 @@ function useSttState() {
   const [activeWeek, setActiveWeek] = useLocalState('stt.activeWeek' + pfx, 1);
   const [activeSubject, setActiveSubject] = useLocalState('stt.activeSubject' + pfx, 'all');
   const [hoursMap, setHoursMap] = useLocalState('stt.hoursMap' + pfx, {});
-  const hours = hoursMap[activeWeek] || { b1: 0, b2: 0, b3: 0 };
+  const hours = hoursMap[activeWeek] || { b1: 0, b2: 0, b3: 0, b4: 0 };
   const [treeTheme, setTreeTheme] = useLocalState('stt.treeTheme' + pfx, 'default');
+  const [soundEnabled, setSoundEnabled] = useLocalState('stt.soundEnabled', true);
+  const [dailyBonuses, setDailyBonuses] = useLocalState('stt.dailyBonuses' + pfx, {});
 
-  const summary = summarize(done, allTasks, hoursMap, streak);
+  const summary = summarize(done, allTasks, hoursMap, streak, dailyBonuses);
 
   const toggleDone = React.useCallback((taskId) => {
     setDone(prev => {
       const next = { ...prev };
       if (next[taskId]) {
         delete next[taskId];
+        triggerHaptic('light');
       } else {
         next[taskId] = new Date().toISOString();
+        playCoinSound();
+        triggerHaptic('heavy');
         const todayISO = new Date().toDateString();
+        setDailyBonuses(db => {
+          if (!db[todayISO]) {
+             setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('stt-daily-bonus'));
+             }, 400);
+             return { ...db, [todayISO]: true };
+          }
+          return db;
+        });
         setStreak(s => {
           if (s.lastISO === todayISO) return s;
           const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -418,44 +549,23 @@ function useSttState() {
       }
       return next;
     });
-  }, [setDone, setStreak]);
+  }, [setDone, setStreak, setDailyBonuses, soundEnabled]);
 
   const updateNote = React.useCallback((taskId, text) => {
     setNotes(prev => ({ ...prev, [taskId]: text }));
   }, [setNotes]);
 
-  const playPopSound = () => {
+  const triggerHaptic = (style = 'light') => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.1);
-    } catch(e) {}
+      if (window?.Capacitor?.Plugins?.Haptics) {
+        window.Capacitor.Plugins.Haptics.impact({ style: style === 'heavy' ? 'Heavy' : 'Light' });
+      } else if (navigator.vibrate) {
+        navigator.vibrate(style === 'heavy' ? 40 : 15);
+      }
+    } catch (e) {}
   };
 
-  const playSuccessSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.5);
-    } catch(e) {}
-  };
+
 
   const bumpHour = React.useCallback((key, delta) => {
     if (delta > 0) playPopSound();
@@ -466,15 +576,28 @@ function useSttState() {
       const nextWeekH = { ...weekH, [key]: newVal };
       const nextTotal = (nextWeekH.b1||0) + (nextWeekH.b2||0) + (nextWeekH.b3||0) + (nextWeekH.b4||0);
       
-      if (delta > 0 && nextTotal > currentTotal && nextTotal > 0 && nextTotal % 7 === 0) {
+      const weekData = window.STT_DATA.weeks.find(w => w.id === activeWeek);
+      const weekTarget = weekData ? weekData.targetHrs : 7;
+      
+      if (delta > 0 && nextTotal >= weekTarget && currentTotal < weekTarget) {
         setTimeout(() => {
           playSuccessSound();
           if (window.confetti) window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+          
+          const isMonthUnlock = activeWeek % 4 === 0;
+          const nextWeekNum = activeWeek + 1;
+          const nextMonthNum = Math.floor((activeWeek - 1) / 4) + 2; // e.g. week 4 -> month 2, week 16 -> month 5
+
+          if (isMonthUnlock) {
+             window.dispatchEvent(new CustomEvent('stt-unlock', { detail: { type: 'month', id: nextMonthNum } }));
+          } else {
+             window.dispatchEvent(new CustomEvent('stt-unlock', { detail: { type: 'week', id: nextWeekNum } }));
+          }
         }, 50);
       }
       return { ...prev, [activeWeek]: nextWeekH };
     });
-  }, [setHoursMap, activeWeek]);
+  }, [setHoursMap, activeWeek, soundEnabled]);
 
   const addTask = React.useCallback((weekId, subject, title, detail, minutes) => {
     setCustomTasks(prev => {
@@ -500,10 +623,11 @@ function useSttState() {
   }, [setCustomTasks]);
 
   return {
-    data, allTasks, done, notes, streak, superName, activeWeek, activeSubject, hours, hoursMap,
-    summary, customTasks, treeTheme,
+    superName: actualName, setSuperName,
+    data, allTasks, done, notes, streak, activeWeek, activeSubject, hoursMap, hours,
+    summary, customTasks, treeTheme, soundEnabled,
     toggleDone, updateNote, bumpHour, addTask, removeTask,
-    setSuperName, setActiveWeek, setActiveSubject, setHoursMap, setTreeTheme,
+    setSuperName, setActiveWeek, setActiveSubject, setHoursMap, setTreeTheme, setSoundEnabled,
   };
 }
 
@@ -513,11 +637,13 @@ function usePomodoro() {
   const [preset, setPreset] = useLocalState('stt.timer.preset', 25);
   const [isBreak, setIsBreak] = useLocalState('stt.timer.isBreak', false);
   const [studyPreset, setStudyPreset] = useLocalState('stt.timer.studyPreset', 25);
+  const [soundEnabled] = useLocalState('stt.soundEnabled', true);
   const tickRef = React.useRef();
 
   const playBell = () => {
+    if (!isSoundEnabled()) return;
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = getAudioCtx();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
@@ -594,4 +720,4 @@ function formatTime(sec) {
   return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
-Object.assign(window, { useLocalState, useSttState, usePomodoro, formatTime });
+Object.assign(window, { useLocalState, useSttState, usePomodoro, formatTime, getAudioCtx, playSuccessSound, playCoinSound, playPopSound });

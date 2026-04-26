@@ -179,10 +179,16 @@ const PomodoroModal = ({ open, onClose, task }) => {
               <stop offset="100%" stopColor="#fcd34d"/>
             </linearGradient>
           </defs>
-          <text x="100" y="105" textAnchor="middle" fill="#ecfdf5" fontSize="32" fontWeight="900" fontFamily="Inter" style={{ transition: 'none' }}>
+          <text x="100" y="70" textAnchor="middle" fontSize="42" style={{
+            animation: isBreak ? 'sttBrainPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' : (running ? 'sttPotatoShake 2s infinite ease-in-out' : 'none'),
+            transformOrigin: '100px 60px'
+          }}>
+            {isBreak ? '🧠' : '🥔'}
+          </text>
+          <text x="100" y="115" textAnchor="middle" fill="#ecfdf5" fontSize="28" fontWeight="900" fontFamily="Inter" style={{ transition: 'none' }}>
             {formatTime(seconds)}
           </text>
-          <text x="100" y="128" textAnchor="middle" fill={isBreak ? '#38bdf8' : '#86efac'} fontSize="11" fontWeight="700">
+          <text x="100" y="135" textAnchor="middle" fill={isBreak ? '#38bdf8' : '#86efac'} fontSize="11" fontWeight="700">
             {running ? (isBreak ? 'resting...' : 'focusing...') : 'paused'}
           </text>
         </svg>
@@ -303,7 +309,7 @@ const AddTaskModal = ({ open, onClose, onAdd }) => {
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>Task එකේ නම (උදා: Bio Past Paper)</label>
+            <label style={{ fontSize: 11, color: 'rgba(240,253,244,0.7)', marginBottom: 6, display: 'block', fontFamily: 'var(--stt-font-sinhala)' }}>Task එකේ නම (උදා: Science Past Paper)</label>
             <input autoFocus value={title} onChange={e => setTitle(e.target.value)}
               style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(74,222,128,0.25)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             />
